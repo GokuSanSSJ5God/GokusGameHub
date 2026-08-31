@@ -1,0 +1,19 @@
+<section class="tetris-section" aria-labelledby="tetris-title">
+  <div class="intro">
+    <span>PLAY NOW</span>
+    <h2 id="tetris-title">Neon Blocks</h2>
+    <p>Klasyczny Tetris zbudowany w Phaser. Użyj strzałek, spacji albo przycisków dotykowych.</p>
+    <div class="keyboard-help"><kbd>←</kbd><kbd>→</kbd> / <kbd>A</kbd><kbd>D</kbd> ruch · <kbd>↑</kbd> / <kbd>W</kbd> obrót · <kbd>↓</kbd> / <kbd>S</kbd> w dół · <kbd>SPACJA</kbd> upuść</div>
+    <div class="actions"><button class="restart" type="button" (click)="control('restart')">Nowa gra</button><button class="close" type="button" (click)="closed.emit()">Wróć do gier</button></div>
+  </div>
+  <div class="game-shell">
+    <div #gameHost class="game-host" aria-label="Gra Tetris"></div>
+    <div class="touch-controls" aria-label="Sterowanie grą">
+      <button type="button" (click)="control('left')" aria-label="W lewo">←</button>
+      <button type="button" (click)="control('rotate')" aria-label="Obróć">↻</button>
+      <button type="button" (click)="control('right')" aria-label="W prawo">→</button>
+      <button type="button" (click)="control('down')" aria-label="W dół">↓</button>
+      <button class="drop" type="button" (click)="control('drop')" aria-label="Upuść">DROP</button>
+    </div>
+  </div>
+</section>

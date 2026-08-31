@@ -1,0 +1,226 @@
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild, output } from '@angular/core';
+import Phaser from 'phaser';
+
+type Cell = number;
+type Matrix = Cell[][];
+
+const COLS = 10;
+const ROWS = 20;
+const BLOCK = 28;
+const COLORS = [0x000000, 0x22d3ee, 0x3b82f6, 0xf97316, 0xfacc15, 0x22c55e, 0xa855f7, 0xef4444];
+const PIECES: readonly Matrix[] = [
+  [[1, 1, 1, 1]],
+  [[2, 0, 0], [2, 2, 2]],
+  [[0, 0, 3], [3, 3, 3]],
+  [[4, 4], [4, 4]],
+  [[0, 5, 5], [5, 5, 0]],
+  [[0, 6, 0], [6, 6, 6]],
+  [[7, 7, 0], [0, 7, 7]]
+];
+
+class TetrisScene extends Phaser.Scene {
+  private board: Matrix = [];
+  private piece: Matrix = [];
+  private pieceX = 0;
+  private pieceY = 0;
+  private score = 0;
+  private lines = 0;
+  private dropAt = 0;
+  private dropDelay = 650;
+  private ended = false;
+  private graphics!: Phaser.GameObjects.Graphics;
+  private scoreText!: Phaser.GameObjects.Text;
+  private statusText!: Phaser.GameObjects.Text;
+
+  constructor() { super('tetris'); }
+
+  create(): void {
+    this.graphics = this.add.graphics();
+    this.scoreText = this.add.text(10, 568, '', { color: '#c4b5fd', fontFamily: 'system-ui', fontSize: '14px', fontStyle: 'bold' });
+    this.statusText = this.add.text(150, 280, '', { align: 'center', color: '#ffffff', fontFamily: 'system-ui', fontSize: '25px', fontStyle: 'bold' }).setOrigin(0.5).setDepth(2);
+
+    const keyboard = this.input.keyboard;
+    keyboard?.addCapture([
+      Phaser.Input.Keyboard.KeyCodes.LEFT,
+      Phaser.Input.Keyboard.KeyCodes.RIGHT,
+      Phaser.Input.Keyboard.KeyCodes.UP,
+      Phaser.Input.Keyboard.KeyCodes.DOWN,
+      Phaser.Input.Keyboard.KeyCodes.SPACE
+    ]);
+    keyboard?.on('keydown-LEFT', () => this.move(-1));
+    keyboard?.on('keydown-A', () => this.move(-1));
+    keyboard?.on('keydown-RIGHT', () => this.move(1));
+    keyboard?.on('keydown-D', () => this.move(1));
+    keyboard?.on('keydown-DOWN', () => this.softDrop());
+    keyboard?.on('keydown-S', () => this.softDrop());
+    keyboard?.on('keydown-UP', () => this.rotate());
+    keyboard?.on('keydown-W', () => this.rotate());
+    keyboard?.on('keydown-SPACE', () => this.hardDrop());
+    keyboard?.on('keydown-R', () => this.restart());
+    this.restart();
+  }
+
+  override update(time: number): void {
+    if (!this.ended && time >= this.dropAt) {
+      this.stepDown();
+      this.dropAt = time + this.dropDelay;
+    }
+  }
+
+  move(direction: number): void {
+    if (!this.ended && !this.collides(this.piece, this.pieceX + direction, this.pieceY)) {
+      this.pieceX += direction;
+      this.draw();
+    }
+  }
+
+  rotate(): void {
+    if (this.ended) return;
+    const rotated = this.piece[0].map((_, index) => this.piece.map(row => row[index]).reverse());
+    for (const offset of [0, -1, 1, -2, 2]) {
+      if (!this.collides(rotated, this.pieceX + offset, this.pieceY)) {
+        this.piece = rotated;
+        this.pieceX += offset;
+        this.draw();
+        return;
+      }
+    }
+  }
+
+  softDrop(): void {
+    if (!this.ended) {
+      this.stepDown();
+    }
+  }
+
+  hardDrop(): void {
+    if (this.ended) return;
+    while (!this.collides(this.piece, this.pieceX, this.pieceY + 1)) {
+      this.pieceY++;
+    }
+    this.lockPiece();
+  }
+
+  restart(): void {
+    this.board = Array.from({ length: ROWS }, () => Array<Cell>(COLS).fill(0));
+    this.score = 0;
+    this.lines = 0;
+    this.dropDelay = 650;
+    this.ended = false;
+    this.statusText.setText('');
+    this.spawnPiece();
+    this.updateLabels();
+    this.draw();
+  }
+
+  private stepDown(): boolean {
+    if (!this.collides(this.piece, this.pieceX, this.pieceY + 1)) {
+      this.pieceY++;
+      this.draw();
+      return true;
+    }
+    this.lockPiece();
+    return false;
+  }
+
+  private lockPiece(): void {
+    this.piece.forEach((row, y) => row.forEach((cell, x) => {
+      if (cell && this.pieceY + y >= 0) this.board[this.pieceY + y][this.pieceX + x] = cell;
+    }));
+    this.clearLines();
+    this.spawnPiece();
+    this.updateLabels();
+    this.draw();
+  }
+
+  private spawnPiece(): void {
+    this.piece = PIECES[Math.floor(Math.random() * PIECES.length)].map(row => [...row]);
+    this.pieceX = Math.floor((COLS - this.piece[0].length) / 2);
+    this.pieceY = 0;
+    if (this.collides(this.piece, this.pieceX, this.pieceY)) {
+      this.ended = true;
+      this.statusText.setText('GAME OVER\nR — restart');
+    }
+  }
+
+  private clearLines(): void {
+    const remainingRows = this.board.filter(row => row.length === COLS && row.filter(cell => cell !== 0).length !== COLS);
+    const cleared = ROWS - remainingRows.length;
+
+    if (cleared) {
+      const emptyRows = Array.from({ length: cleared }, () => Array<Cell>(COLS).fill(0));
+      this.board = [...emptyRows, ...remainingRows];
+      this.lines += cleared;
+      this.score += [0, 100, 300, 500, 800][cleared];
+      this.dropDelay = Math.max(120, 650 - this.lines * 15);
+    }
+  }
+
+  private collides(matrix: Matrix, targetX: number, targetY: number): boolean {
+    return matrix.some((row, y) => row.some((cell, x) => {
+      if (!cell) return false;
+      const boardX = targetX + x;
+      const boardY = targetY + y;
+      return boardX < 0 || boardX >= COLS || boardY >= ROWS || (boardY >= 0 && Boolean(this.board[boardY][boardX]));
+    }));
+  }
+
+  private draw(): void {
+    this.graphics.clear();
+    this.graphics.fillStyle(0x090e1b, 1).fillRect(10, 4, COLS * BLOCK, ROWS * BLOCK);
+    this.graphics.lineStyle(1, 0xffffff, 0.04);
+    for (let x = 0; x <= COLS; x++) this.graphics.lineBetween(10 + x * BLOCK, 4, 10 + x * BLOCK, 4 + ROWS * BLOCK);
+    for (let y = 0; y <= ROWS; y++) this.graphics.lineBetween(10, 4 + y * BLOCK, 10 + COLS * BLOCK, 4 + y * BLOCK);
+    this.board.forEach((row, y) => row.forEach((cell, x) => this.drawCell(cell, x, y)));
+    if (!this.ended) this.piece.forEach((row, y) => row.forEach((cell, x) => this.drawCell(cell, this.pieceX + x, this.pieceY + y)));
+  }
+
+  private drawCell(cell: Cell, x: number, y: number): void {
+    if (!cell || y < 0) return;
+    const px = 11 + x * BLOCK;
+    const py = 5 + y * BLOCK;
+    this.graphics.fillStyle(COLORS[cell], 1).fillRoundedRect(px, py, BLOCK - 2, BLOCK - 2, 4);
+    this.graphics.fillStyle(0xffffff, 0.18).fillRoundedRect(px + 3, py + 3, BLOCK - 8, 5, 2);
+  }
+
+  private updateLabels(): void { this.scoreText.setText(`SCORE  ${this.score}     LINES  ${this.lines}`); }
+}
+
+@Component({
+  selector: 'app-tetris-game',
+  templateUrl: './tetris-game.html',
+  styleUrl: './tetris-game.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
+})
+export class TetrisGame implements AfterViewInit, OnDestroy {
+  readonly closed = output<void>();
+  readonly ready = output<void>();
+  @ViewChild('gameHost', { static: true }) private gameHost!: ElementRef<HTMLDivElement>;
+  private game?: Phaser.Game;
+  private scene?: TetrisScene;
+
+  ngAfterViewInit(): void {
+    this.scene = new TetrisScene();
+    this.game = new Phaser.Game({
+      type: Phaser.AUTO,
+      parent: this.gameHost.nativeElement,
+      width: 300,
+      height: 600,
+      backgroundColor: '#090e1b',
+      scene: this.scene,
+      scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH }
+    });
+    requestAnimationFrame(() => this.ready.emit());
+  }
+
+  control(action: 'left' | 'right' | 'rotate' | 'down' | 'drop' | 'restart'): void {
+    if (action === 'left') this.scene?.move(-1);
+    if (action === 'right') this.scene?.move(1);
+    if (action === 'rotate') this.scene?.rotate();
+    if (action === 'down') this.scene?.softDrop();
+    if (action === 'drop') this.scene?.hardDrop();
+    if (action === 'restart') this.scene?.restart();
+  }
+
+  ngOnDestroy(): void { this.game?.destroy(true); }
+}

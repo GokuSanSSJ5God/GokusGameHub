@@ -1,6 +1,13 @@
 <app-title-header />
 <main>
-  <app-games />
+  <app-games (gameSelected)="openGame($event)" />
+  @defer (when selectedGame() === 'tetris') {
+    @if (selectedGame() === 'tetris') {
+      <div id="active-game"><app-tetris-game (ready)="scrollToGame()" (closed)="selectedGame.set(null)" /></div>
+    }
+  } @placeholder {
+    <span></span>
+  }
   <section class="about" id="about">
     <span class="eyebrow">GOKU'S GAMEHUB</span>
     <h2>{{ i18n.t('place') }}</h2>

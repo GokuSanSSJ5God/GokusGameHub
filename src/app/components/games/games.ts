@@ -1,10 +1,27 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, output } from '@angular/core';
 import { I18nService, TranslationKey } from '../../services/i18n.service';
-interface Game { readonly title: string; readonly category: TranslationKey; readonly icon: string; readonly color: string; }
+
+interface Game {
+  readonly id: string;
+  readonly title: string;
+  readonly category: TranslationKey;
+  readonly icon: string;
+  readonly color: string;
+  readonly available: boolean;
+}
+
 @Component({ selector: 'app-games', templateUrl: './games.html', styleUrl: './games.css', changeDetection: ChangeDetectionStrategy.OnPush })
 export class Games {
+  readonly gameSelected = output<string>();
   protected readonly i18n = inject(I18nService);
   protected readonly games: readonly Game[] = [
-    { title: 'Cyber Runner', category: 'action', icon: '⚡', color: '#8b5cf6' }, { title: 'Pixel Kingdom', category: 'strategy', icon: '♛', color: '#06b6d4' }, { title: 'Night Rally', category: 'racing', icon: '◈', color: '#f97316' }
+    { id: 'tetris', title: 'Neon Blocks', category: 'puzzle', icon: '▦', color: '#8b5cf6', available: true },
+    { id: 'cyber-runner', title: 'Cyber Runner', category: 'action', icon: '⚡', color: '#6366f1', available: false },
+    { id: 'pixel-kingdom', title: 'Pixel Kingdom', category: 'strategy', icon: '♛', color: '#06b6d4', available: false },
+    { id: 'night-rally', title: 'Night Rally', category: 'racing', icon: '◈', color: '#f97316', available: false }
   ];
+
+  protected selectGame(game: Game): void {
+    if (game.available) this.gameSelected.emit(game.id);
+  }
 }
