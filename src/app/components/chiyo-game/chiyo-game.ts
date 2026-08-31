@@ -14,6 +14,7 @@ class ChiyoScene extends Phaser.Scene {
   private readonly engine = new ChiyoEngine();
   private graphics!: Phaser.GameObjects.Graphics;
   private scoreText!: Phaser.GameObjects.Text;
+  private pauseText!: Phaser.GameObjects.Text;
   private hintText!: Phaser.GameObjects.Text;
   private terrain: TerrainSlice[] = [];
   private items: Collectible[] = [];
@@ -31,6 +32,7 @@ class ChiyoScene extends Phaser.Scene {
   create(): void {
     this.graphics = this.add.graphics();
     this.scoreText = this.add.text(18, 16, '', { color: '#fef08a', fontFamily: 'system-ui', fontSize: '20px', fontStyle: 'bold' }).setDepth(3);
+    this.pauseText = this.add.text(WIDTH - 18, 18, 'P / ESC — Pause', { color: '#ffffff', fontFamily: 'system-ui', fontSize: '15px', fontStyle: 'bold' }).setOrigin(1, 0).setDepth(3);
     this.hintText = this.add.text(WIDTH / 2, HEIGHT / 2, '', { align: 'center', color: '#ffffff', fontFamily: 'system-ui', fontSize: '26px', fontStyle: 'bold' }).setOrigin(0.5).setDepth(3);
     this.input.on('pointerdown', () => this.flap());
     const keyboard = this.input.keyboard;
@@ -38,6 +40,8 @@ class ChiyoScene extends Phaser.Scene {
     keyboard?.on('keydown-SPACE', () => this.flap());
     keyboard?.on('keydown-UP', () => this.flap());
     keyboard?.on('keydown-R', () => this.restart());
+    keyboard?.on('keydown-P', () => this.togglePause());
+    keyboard?.on('keydown-ESC', () => this.togglePause());
     this.restart();
   }
 
@@ -52,13 +56,23 @@ class ChiyoScene extends Phaser.Scene {
   }
 
   flap(): void {
+    if (this.engine.paused) return;
     if (this.engine.ended) { this.restart(); return; }
     this.engine.flap();
     this.hintText.setText('');
   }
 
+  togglePause(): boolean {
+    const paused = this.engine.togglePause();
+    this.pauseText.setText(paused ? 'P / ESC — Resume' : 'P / ESC — Pause');
+    if (paused) this.hintText.setText('PAUSED');
+    else if (this.engine.started && !this.engine.ended) this.hintText.setText('');
+    return paused;
+  }
+
   restart(): void {
     this.engine.restart();
+    this.pauseText.setText('P / ESC — Pause');
     this.lastTime = this.time.now;
     this.hintText.setText('CLICK / SPACE\nFly, Chiyo!');
     this.updateScore(); this.draw();

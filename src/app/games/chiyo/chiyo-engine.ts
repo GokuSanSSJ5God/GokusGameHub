@@ -16,6 +16,7 @@ export class ChiyoEngine {
   speed = 190;
   ended = false;
   started = false;
+  paused = false;
 
   constructor(private readonly random: () => number = Math.random) { this.restart(); }
 
@@ -24,7 +25,7 @@ export class ChiyoEngine {
 
   restart(): void {
     this.birdY = 250; this.velocityY = 0; this.distance = 0; this.itemScore = 0;
-    this.speed = 190; this.ended = false; this.started = false;
+    this.speed = 190; this.ended = false; this.started = false; this.paused = false;
     this.terrain = [];
     for (let x = 0; x <= CHIYO_WIDTH + CHIYO_SLICE_WIDTH * 2; x += CHIYO_SLICE_WIDTH) {
       this.terrain.push(this.createSlice(x, this.terrain.length));
@@ -33,13 +34,14 @@ export class ChiyoEngine {
   }
 
   flap(): void {
+    if (this.paused) return;
     if (this.ended) { this.restart(); return; }
     this.started = true;
     this.velocityY = -360;
   }
 
   step(delta: number): void {
-    if (!this.started || this.ended || delta <= 0) return;
+    if (!this.started || this.ended || this.paused || delta <= 0) return;
     const safeDelta = Math.min(delta, 0.035);
     this.velocityY += 980 * safeDelta;
     this.birdY += this.velocityY * safeDelta;
@@ -47,6 +49,12 @@ export class ChiyoEngine {
     this.speed = Math.min(280, 190 + this.distance / 90);
     this.moveWorld(this.speed * safeDelta);
     this.checkCollisions();
+  }
+
+  togglePause(): boolean {
+    if (!this.started || this.ended) return this.paused;
+    this.paused = !this.paused;
+    return this.paused;
   }
 
   private moveWorld(amount: number): void {

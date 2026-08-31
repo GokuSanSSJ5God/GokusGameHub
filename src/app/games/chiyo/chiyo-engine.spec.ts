@@ -50,4 +50,13 @@ describe('ChiyoEngine', () => {
     expect(game.started).toBe(false);
     expect(game.ended).toBe(false);
   });
+
+  it('stops physics, distance and scoring while paused', () => {
+    const game = new ChiyoEngine(() => 0.9);
+    game.flap(); game.step(0.02); game.togglePause();
+    const snapshot = { birdY: game.birdY, distance: game.distance, score: game.score };
+    game.step(1);
+    expect({ birdY: game.birdY, distance: game.distance, score: game.score }).toEqual(snapshot);
+    expect(game.paused).toBe(true);
+  });
 });
