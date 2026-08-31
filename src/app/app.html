@@ -15,6 +15,13 @@
   } @placeholder {
     <span></span>
   }
+  @defer (when selectedGame() === 'chiyo') {
+    @if (selectedGame() === 'chiyo') {
+      <div id="active-chiyo"><app-chiyo-game (ready)="scrollToChiyo()" (closed)="selectedGame.set(null)" /></div>
+    }
+  } @placeholder {
+    <span></span>
+  }
   <section class="about" id="about">
     <span class="eyebrow">GOKU'S GAMEHUB</span>
     <h2>{{ i18n.t('place') }}</h2>

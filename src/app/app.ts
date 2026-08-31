@@ -4,11 +4,12 @@ import { Games } from './components/games/games';
 import { TitleHeader } from './components/title-header/title-header';
 import { TetrisGame } from './components/tetris-game/tetris-game';
 import { SnakeGame } from './components/snake-game/snake-game';
+import { ChiyoGame } from './components/chiyo-game/chiyo-game';
 import { I18nService } from './services/i18n.service';
 
 @Component({
   selector: 'app-root',
-  imports: [TitleHeader, TetrisGame, SnakeGame, Games, Footer],
+  imports: [TitleHeader, TetrisGame, SnakeGame, ChiyoGame, Games, Footer],
   templateUrl: './app.html',
   styleUrl: './app.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -32,5 +33,9 @@ export class App {
 
   protected scrollToSnake(): void {
     document.querySelector('#active-snake')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  protected scrollToChiyo(): void {
+    document.querySelector('#active-chiyo')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 }

@@ -1,0 +1,5 @@
+<section class="chiyo-section" aria-labelledby="chiyo-title">
+  <div class="heading"><div><span>PLAY NOW</span><h2 id="chiyo-title">Chiyo's Flight</h2><p>Klikaj, aby Chiyo wzbił się wyżej. Omijaj teren, zbieraj złote nasiona i leć jak najdalej.</p></div><div class="actions"><button type="button" (click)="restart()">Nowa gra</button><button class="close" type="button" (click)="closed.emit()">Wróć do gier</button></div></div>
+  <div #gameHost class="game-host" aria-label="Gra Chiyo's Flight"></div>
+  <button class="mobile-flap" type="button" (click)="flap()">🐤 Wzleć</button>
+</section>

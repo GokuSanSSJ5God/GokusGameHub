@@ -1,6 +1,7 @@
 :host { display: block; min-height: 100vh; }
 #active-game { scroll-margin-top: 20px; }
 #active-snake { scroll-margin-top: 20px; }
+#active-chiyo { scroll-margin-top: 20px; }
 .about { max-width: 1120px; margin: 0 auto 70px; padding: 92px 28px; text-align: center; border: 1px solid #ffffff10; border-radius: 24px; background: linear-gradient(135deg, #161c2e, #101525); }
 .eyebrow { color: #a78bfa; font-size: 12px; font-weight: 800; letter-spacing: .19em; }
 .about h2 { margin: 8px 0 0; font-size: 34px; }
