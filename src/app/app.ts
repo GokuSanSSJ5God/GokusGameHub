@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, afterNextRender, inject, signal } from '@angular/core';
 import { Footer } from './components/footer/footer';
 import { Games } from './components/games/games';
 import { TitleHeader } from './components/title-header/title-header';
@@ -16,6 +16,11 @@ import { I18nService } from './services/i18n.service';
 export class App {
   protected readonly i18n = inject(I18nService);
   protected readonly selectedGame = signal<string | null>(null);
+
+  constructor() {
+    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    afterNextRender(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }));
+  }
 
   protected openGame(gameId: string): void {
     this.selectedGame.set(gameId);
