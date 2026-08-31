@@ -6,19 +6,19 @@ const translations = {
     games: 'Gry', about: 'O nas', heroEyebrow: 'GRY W JEDNYM MIEJSCU', heroTitle: 'Twój następny świat', heroAccent: 'zaczyna się tutaj.',
     heroText: 'Odkrywaj nowe gry, wracaj do ulubionych tytułów i graj po swojemu.', browse: 'Przeglądaj gry', trending: 'NA TOPIE', popular: 'Popularne teraz',
     seeAll: 'Zobacz wszystkie', play: 'Graj', soon: 'Wkrótce', place: 'Miejsce stworzone dla graczy.', aboutText: 'To dopiero początek. Wkrótce pojawią się tu profile, biblioteka gier i rankingi społeczności.',
-    madeFor: 'Stworzone dla graczy.', puzzle: 'Logiczna', action: 'Akcja', strategy: 'Strategia', racing: 'Wyścigi'
+    madeFor: 'Stworzone dla graczy.', puzzle: 'Logiczna', arcade: 'Zręcznościowa', action: 'Akcja', strategy: 'Strategia', racing: 'Wyścigi'
   },
   en: {
     games: 'Games', about: 'About', heroEyebrow: 'ALL YOUR GAMES IN ONE PLACE', heroTitle: 'Your next world', heroAccent: 'starts right here.',
     heroText: 'Discover new games, return to your favorites and play your way.', browse: 'Browse games', trending: 'TRENDING', popular: 'Popular now',
     seeAll: 'See all', play: 'Play', soon: 'Soon', place: 'A place made for gamers.', aboutText: 'This is just the beginning. Profiles, game libraries and community rankings are coming soon.',
-    madeFor: 'Made for players.', puzzle: 'Puzzle', action: 'Action', strategy: 'Strategy', racing: 'Racing'
+    madeFor: 'Made for players.', puzzle: 'Puzzle', arcade: 'Arcade', action: 'Action', strategy: 'Strategy', racing: 'Racing'
   },
   ja: {
     games: 'ゲーム', about: '私たちについて', heroEyebrow: 'すべてのゲームをひとつの場所に', heroTitle: '次の世界は', heroAccent: 'ここから始まる。',
     heroText: '新しいゲームを見つけ、お気に入りに戻り、自分らしくプレイしよう。', browse: 'ゲームを見る', trending: 'トレンド', popular: '今人気のゲーム',
     seeAll: 'すべて見る', play: 'プレイ', soon: '近日公開', place: 'ゲーマーのための場所。', aboutText: 'これは始まりにすぎません。プロフィール、ゲームライブラリ、コミュニティランキングを近日公開します。',
-    madeFor: 'プレイヤーのために。', puzzle: 'パズル', action: 'アクション', strategy: 'ストラテジー', racing: 'レース'
+    madeFor: 'プレイヤーのために。', puzzle: 'パズル', arcade: 'アーケード', action: 'アクション', strategy: 'ストラテジー', racing: 'レース'
   }
 } as const;
 

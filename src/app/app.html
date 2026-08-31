@@ -8,6 +8,13 @@
   } @placeholder {
     <span></span>
   }
+  @defer (when selectedGame() === 'snake') {
+    @if (selectedGame() === 'snake') {
+      <div id="active-snake"><app-snake-game (ready)="scrollToSnake()" (closed)="selectedGame.set(null)" /></div>
+    }
+  } @placeholder {
+    <span></span>
+  }
   <section class="about" id="about">
     <span class="eyebrow">GOKU'S GAMEHUB</span>
     <h2>{{ i18n.t('place') }}</h2>
