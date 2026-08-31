@@ -1,5 +1,6 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild, output } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild, inject, output } from '@angular/core';
 import Phaser from 'phaser';
+import { I18nService, TranslationKey } from '../../services/i18n.service';
 
 type Cell = number;
 type Matrix = Cell[][];
@@ -32,7 +33,7 @@ class TetrisScene extends Phaser.Scene {
   private scoreText!: Phaser.GameObjects.Text;
   private statusText!: Phaser.GameObjects.Text;
 
-  constructor() { super('tetris'); }
+  constructor(private readonly translate: (key: TranslationKey) => string) { super('tetris'); }
 
   create(): void {
     this.graphics = this.add.graphics();
@@ -139,7 +140,7 @@ class TetrisScene extends Phaser.Scene {
     this.pieceY = 0;
     if (this.collides(this.piece, this.pieceX, this.pieceY)) {
       this.ended = true;
-      this.statusText.setText('GAME OVER\nR — restart');
+      this.statusText.setText(`${this.translate('gameOver')}\nR — ${this.translate('restart')}`);
     }
   }
 
@@ -183,7 +184,7 @@ class TetrisScene extends Phaser.Scene {
     this.graphics.fillStyle(0xffffff, 0.18).fillRoundedRect(px + 3, py + 3, BLOCK - 8, 5, 2);
   }
 
-  private updateLabels(): void { this.scoreText.setText(`SCORE  ${this.score}     LINES  ${this.lines}`); }
+  private updateLabels(): void { this.scoreText.setText(`${this.translate('score')}  ${this.score}     ${this.translate('lines')}  ${this.lines}`); }
 }
 
 @Component({
@@ -196,11 +197,12 @@ export class TetrisGame implements AfterViewInit, OnDestroy {
   readonly closed = output<void>();
   readonly ready = output<void>();
   @ViewChild('gameHost', { static: true }) private gameHost!: ElementRef<HTMLDivElement>;
+  protected readonly i18n = inject(I18nService);
   private game?: Phaser.Game;
   private scene?: TetrisScene;
 
   ngAfterViewInit(): void {
-    this.scene = new TetrisScene();
+    this.scene = new TetrisScene(key => this.i18n.t(key));
     this.game = new Phaser.Game({
       type: Phaser.AUTO,
       parent: this.gameHost.nativeElement,

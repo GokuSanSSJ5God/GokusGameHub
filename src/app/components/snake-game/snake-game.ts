@@ -1,5 +1,6 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild, output } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild, inject, output } from '@angular/core';
 import Phaser from 'phaser';
+import { I18nService, TranslationKey } from '../../services/i18n.service';
 
 interface Point { x: number; y: number; }
 const GRID = 20;
@@ -18,7 +19,7 @@ class SnakeScene extends Phaser.Scene {
   private moveDelay = 140;
   private ended = false;
 
-  constructor() { super('snake'); }
+  constructor(private readonly translate: (key: TranslationKey) => string) { super('snake'); }
 
   create(): void {
     this.graphics = this.add.graphics();
@@ -57,7 +58,7 @@ class SnakeScene extends Phaser.Scene {
     const next = { x: this.snake[0].x + this.direction.x, y: this.snake[0].y + this.direction.y };
     const hitWall = next.x < 0 || next.x >= GRID || next.y < 0 || next.y >= GRID;
     const hitSelf = this.snake.some(segment => segment.x === next.x && segment.y === next.y);
-    if (hitWall || hitSelf) { this.ended = true; this.statusText.setText('GAME OVER\nR / SPACE — restart'); return; }
+    if (hitWall || hitSelf) { this.ended = true; this.statusText.setText(`${this.translate('gameOver')}\nR / SPACE — ${this.translate('restart')}`); return; }
     this.snake.unshift(next);
     if (next.x === this.food.x && next.y === this.food.y) {
       this.score += 10; this.moveDelay = Math.max(65, this.moveDelay - 3); this.placeFood(); this.updateScore();
@@ -78,16 +79,17 @@ class SnakeScene extends Phaser.Scene {
     this.snake.forEach((segment, index) => this.graphics.fillStyle(index === 0 ? 0x86efac : 0x22c55e, 1).fillRoundedRect(segment.x * CELL + 1, segment.y * CELL + 1, CELL - 2, CELL - 2, 5));
   }
 
-  private updateScore(): void { this.scoreText.setText(`SCORE  ${this.score}     LENGTH  ${this.snake.length}`); }
+  private updateScore(): void { this.scoreText.setText(`${this.translate('score')}  ${this.score}     ${this.translate('length')}  ${this.snake.length}`); }
 }
 
 @Component({ selector: 'app-snake-game', templateUrl: './snake-game.html', styleUrl: './snake-game.css', changeDetection: ChangeDetectionStrategy.OnPush })
 export class SnakeGame implements AfterViewInit, OnDestroy {
   readonly closed = output<void>(); readonly ready = output<void>();
   @ViewChild('gameHost', { static: true }) private gameHost!: ElementRef<HTMLDivElement>;
+  protected readonly i18n = inject(I18nService);
   private game?: Phaser.Game; private scene?: SnakeScene;
   ngAfterViewInit(): void {
-    this.scene = new SnakeScene();
+    this.scene = new SnakeScene(key => this.i18n.t(key));
     this.game = new Phaser.Game({ type: Phaser.AUTO, parent: this.gameHost.nativeElement, width: 400, height: 450, backgroundColor: '#07130e', scene: this.scene, scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH } });
     requestAnimationFrame(() => this.ready.emit());
   }
