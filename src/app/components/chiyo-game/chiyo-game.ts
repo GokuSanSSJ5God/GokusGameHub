@@ -1,6 +1,7 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild, output } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild, inject, output } from '@angular/core';
 import Phaser from 'phaser';
 import { CHIYO_BIRD_X, ChiyoEngine } from '../../games/chiyo/chiyo-engine';
+import { I18nService, TranslationKey } from '../../services/i18n.service';
 
 interface TerrainSlice { x: number; top: number; bottom: number; }
 interface Collectible { x: number; y: number; collected: boolean; }
@@ -27,12 +28,12 @@ class ChiyoScene extends Phaser.Scene {
   private started = false;
   private lastTime = 0;
 
-  constructor() { super('chiyo-flight'); }
+  constructor(private readonly translate: (key: TranslationKey) => string) { super('chiyo-flight'); }
 
   create(): void {
     this.graphics = this.add.graphics();
     this.scoreText = this.add.text(18, 16, '', { color: '#fef08a', fontFamily: 'system-ui', fontSize: '20px', fontStyle: 'bold' }).setDepth(3);
-    this.pauseText = this.add.text(WIDTH - 18, 18, 'P / ESC — Pause', { color: '#ffffff', fontFamily: 'system-ui', fontSize: '15px', fontStyle: 'bold' }).setOrigin(1, 0).setDepth(3);
+    this.pauseText = this.add.text(WIDTH - 18, 18, `P / ESC — ${this.translate('pause')}`, { color: '#ffffff', fontFamily: 'system-ui', fontSize: '15px', fontStyle: 'bold' }).setOrigin(1, 0).setDepth(3);
     this.hintText = this.add.text(WIDTH / 2, HEIGHT / 2, '', { align: 'center', color: '#ffffff', fontFamily: 'system-ui', fontSize: '26px', fontStyle: 'bold' }).setOrigin(0.5).setDepth(3);
     this.input.on('pointerdown', () => this.flap());
     const keyboard = this.input.keyboard;
@@ -50,7 +51,7 @@ class ChiyoScene extends Phaser.Scene {
     this.lastTime = time;
     if (!this.engine.started || this.engine.ended || delta <= 0) return;
     this.engine.step(delta);
-    if (this.engine.ended) this.hintText.setText(`GAME OVER\nSCORE ${this.engine.score}\nClick / R — restart`);
+    if (this.engine.ended) this.hintText.setText(`${this.translate('gameOver')}\n${this.translate('score')} ${this.engine.score}\nClick / R — ${this.translate('restart')}`);
     this.updateScore();
     this.draw();
   }
@@ -64,17 +65,17 @@ class ChiyoScene extends Phaser.Scene {
 
   togglePause(): boolean {
     const paused = this.engine.togglePause();
-    this.pauseText.setText(paused ? 'P / ESC — Resume' : 'P / ESC — Pause');
-    if (paused) this.hintText.setText('PAUSED');
+    this.pauseText.setText(`P / ESC — ${this.translate(paused ? 'resume' : 'pause')}`);
+    if (paused) this.hintText.setText(this.translate('paused'));
     else if (this.engine.started && !this.engine.ended) this.hintText.setText('');
     return paused;
   }
 
   restart(): void {
     this.engine.restart();
-    this.pauseText.setText('P / ESC — Pause');
+    this.pauseText.setText(`P / ESC — ${this.translate('pause')}`);
     this.lastTime = this.time.now;
-    this.hintText.setText('CLICK / SPACE\nFly, Chiyo!');
+    this.hintText.setText(`CLICK / SPACE\n${this.translate('flyChiyo')}`);
     this.updateScore(); this.draw();
   }
 
@@ -126,7 +127,7 @@ class ChiyoScene extends Phaser.Scene {
   }
 
   private totalScore(): number { return this.engine.score; }
-  private updateScore(): void { this.scoreText.setText(`SCORE  ${this.engine.score}     DISTANCE  ${Math.floor(this.engine.distance / 10)} m     ITEMS  ${this.engine.collectedItems}`); }
+  private updateScore(): void { this.scoreText.setText(`${this.translate('score')}  ${this.engine.score}     ${this.translate('distance')}  ${Math.floor(this.engine.distance / 10)} m     ${this.translate('items')}  ${this.engine.collectedItems}`); }
 
   private draw(): void {
     this.graphics.clear();
@@ -171,10 +172,11 @@ class ChiyoScene extends Phaser.Scene {
 @Component({ selector: 'app-chiyo-game', templateUrl: './chiyo-game.html', styleUrl: './chiyo-game.css', changeDetection: ChangeDetectionStrategy.OnPush })
 export class ChiyoGame implements AfterViewInit, OnDestroy {
   readonly closed = output<void>(); readonly ready = output<void>();
+  protected readonly i18n = inject(I18nService);
   @ViewChild('gameHost', { static: true }) private gameHost!: ElementRef<HTMLDivElement>;
   private game?: Phaser.Game; private scene?: ChiyoScene;
   ngAfterViewInit(): void {
-    this.scene = new ChiyoScene();
+    this.scene = new ChiyoScene(key => this.i18n.t(key));
     this.game = new Phaser.Game({ type: Phaser.AUTO, parent: this.gameHost.nativeElement, width: WIDTH, height: HEIGHT, backgroundColor: '#071b33', scene: this.scene, scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH } });
     requestAnimationFrame(() => this.ready.emit());
   }
