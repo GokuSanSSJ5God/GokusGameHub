@@ -1,4 +1,6 @@
 .language-switcher { display: flex; padding: 3px; gap: 2px; border: 1px solid #ffffff18; border-radius: 10px; background: #ffffff08; }
-button { min-width: 35px; border: 0; border-radius: 7px; padding: 7px 8px; background: transparent; color: #64748b; font-size: 11px; font-weight: 800; cursor: pointer; transition: color .2s, background .2s; }
+button { display: grid; place-items: center; min-width: 39px; border: 0; border-radius: 7px; padding: 6px 7px; background: transparent; cursor: pointer; transition: background .2s, transform .2s; }
 button:hover { color: #f8fafc; }
 button.active { color: white; background: #7c3aed; box-shadow: 0 3px 12px #7c3aed55; }
+button:hover { transform: translateY(-1px); }
+img { display: block; width: 25px; height: 17px; object-fit: cover; border-radius: 2px; box-shadow: 0 1px 4px #0008; }

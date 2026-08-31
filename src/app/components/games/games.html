@@ -6,7 +6,9 @@
   <div class="game-grid">
     @for (game of games; track game.id) {
       <article class="game-card" [class.unavailable]="!game.available">
-        <div class="game-cover" [style.--accent]="game.color"><span aria-hidden="true">{{ game.icon }}</span></div>
+        <div class="game-cover" [style.--accent]="game.color">
+          @if (game.cover) { <img [src]="game.cover" [alt]="game.title"> } @else { <span aria-hidden="true">{{ game.icon }}</span> }
+        </div>
         <div class="game-details">
           <div><p>{{ i18n.t(game.category) }}</p><h3>{{ game.title }}</h3></div>
           <button type="button" [disabled]="!game.available" (click)="selectGame(game)">{{ game.available ? i18n.t('play') : i18n.t('soon') }}</button>
