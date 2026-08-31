@@ -1,0 +1,5 @@
+<div class="language-switcher" aria-label="Wybierz język">
+  <button type="button" [class.active]="i18n.language() === 'pl'" (click)="setLanguage('pl')" title="Polski">PL</button>
+  <button type="button" [class.active]="i18n.language() === 'en'" (click)="setLanguage('en')" title="English">EN</button>
+  <button type="button" [class.active]="i18n.language() === 'ja'" (click)="setLanguage('ja')" title="日本語">日本</button>
+</div>

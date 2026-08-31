@@ -1,0 +1,12 @@
+<header class="topbar">
+  <a class="brand" href="#" aria-label="Goku's GameHub — strona główna"><span class="brand-mark">G</span><span>Goku's <strong>GameHub</strong></span></a>
+  <nav aria-label="Główna nawigacja"><a class="active" href="#games">{{ i18n.t('games') }}</a><a href="#about">{{ i18n.t('about') }}</a></nav>
+  <app-language-switcher />
+</header>
+<section class="hero" aria-labelledby="hero-title">
+  <span class="eyebrow">{{ i18n.t('heroEyebrow') }}</span>
+  <h1 id="hero-title">{{ i18n.t('heroTitle') }}<br><span>{{ i18n.t('heroAccent') }}</span></h1>
+  <p>{{ i18n.t('heroText') }}</p>
+  <a class="cta" href="#games">{{ i18n.t('browse') }} <span aria-hidden="true">→</span></a>
+  <div class="orb orb-one"></div><div class="orb orb-two"></div>
+</section>
