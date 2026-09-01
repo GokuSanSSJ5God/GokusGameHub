@@ -1,4 +1,4 @@
-.snake-section { max-width: 1050px; margin: 90px auto 20px; padding: 48px; display: grid; grid-template-columns: 1fr 430px; align-items: center; gap: 60px; border: 1px solid #22c55e30; border-radius: 28px; background: radial-gradient(circle at 80% 30%, #16a34a25, transparent 35%), #0b1512; box-shadow: 0 30px 100px #0005; }.intro > span { color: #4ade80; font-size: 12px; font-weight: 800; letter-spacing: .2em; }h2 { margin: 12px 0; font-size: clamp(38px, 6vw, 64px); letter-spacing: -.05em; }p { max-width: 450px; color: #94a3b8; font-size: 17px; line-height: 1.7; }.keyboard-help { margin-top: 24px; color: #64748b; font-size: 12px; line-height: 2.5; }kbd { padding: 4px 7px; border: 1px solid #ffffff20; border-bottom-width: 3px; border-radius: 6px; background: #ffffff08; color: #cbd5e1; }.actions { display: flex; gap: 10px; margin-top: 22px; }.restart, .close { padding: 12px 18px; border: 1px solid #22c55e70; border-radius: 10px; background: #16a34a20; color: #86efac; font-weight: 700; cursor: pointer; }.close { border-color: #ffffff18; background: #ffffff08; color: #94a3b8; }.game-host { width: 400px; height: 450px; max-width: 100%; margin: auto; overflow: hidden; border: 1px solid #ffffff12; border-radius: 12px; box-shadow: 0 0 60px #22c55e20; touch-action: pan-y pinch-zoom; }.game-host canvas { display: block; }.touch-controls { display: grid; grid-template-columns: repeat(3, 58px); justify-content: center; gap: 7px; margin: 12px auto 0; }.touch-controls button { min-height: 50px; border: 1px solid #ffffff18; border-radius: 10px; background: #102219; color: white; font-size: 20px; font-weight: 800; cursor: pointer; touch-action: manipulation; }.touch-controls button:active { background: #16a34a; }
+.snake-section { max-width: 1050px; margin: 90px auto 20px; padding: 48px; display: grid; grid-template-columns: 1fr 430px; align-items: center; gap: 60px; border: 1px solid #22c55e30; border-radius: 28px; background: radial-gradient(circle at 80% 30%, #16a34a25, transparent 35%), #0b1512; box-shadow: 0 30px 100px #0005; }.intro > span { color: #4ade80; font-size: 12px; font-weight: 800; letter-spacing: .2em; }h2 { margin: 12px 0; font-size: clamp(38px, 6vw, 64px); letter-spacing: -.05em; }p { max-width: 450px; color: #94a3b8; font-size: 17px; line-height: 1.7; }.keyboard-help { margin-top: 24px; color: #64748b; font-size: 12px; line-height: 2.5; }kbd { padding: 4px 7px; border: 1px solid #ffffff20; border-bottom-width: 3px; border-radius: 6px; background: #ffffff08; color: #cbd5e1; }.actions { display: flex; gap: 10px; margin-top: 22px; }.restart, .close { padding: 12px 18px; border: 1px solid #22c55e70; border-radius: 10px; background: #16a34a20; color: #86efac; font-weight: 700; cursor: pointer; }.close { border-color: #ffffff18; background: #ffffff08; color: #94a3b8; }.game-stage { position: relative; width: min(400px, 100%); margin: auto; }.game-host { width: 100%; height: 450px; overflow: hidden; border: 1px solid #ffffff12; border-radius: 12px; box-shadow: 0 0 60px #22c55e20; touch-action: pan-y pinch-zoom; }.game-host canvas { display: block; }.touch-controls { display: grid; grid-template-columns: repeat(3, 58px); justify-content: center; gap: 7px; margin: 12px auto 0; }.touch-controls .up { grid-column: 2; }.touch-controls .left { grid-column: 1; grid-row: 2; }.touch-controls .down { grid-column: 2; grid-row: 2; }.touch-controls .right { grid-column: 3; grid-row: 2; }.touch-controls button { min-height: 50px; border: 1px solid #ffffff18; border-radius: 10px; background: #102219; color: white; font-size: 20px; font-weight: 800; cursor: pointer; touch-action: manipulation; }.touch-controls button:active { background: #16a34a; }
 @media (max-width: 850px) { .snake-section { margin: 50px 18px 10px; padding: 30px 18px; grid-template-columns: 1fr; gap: 32px; text-align: center; }.intro p { margin-inline: auto; }.keyboard-help { display: none; }.actions { justify-content: center; }.game-host { height: min(450px, 112.5vw); } }
 
 .game-shell { width: 100%; min-width: 0; overflow: hidden; }
@@ -7,10 +7,20 @@
 .touch-controls { position: relative; z-index: 2; }
 .touch-controls button { touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
 .touch-controls .pause { grid-column: 1 / -1; min-height: 44px; font-size: 14px; color: #86efac; }
+.mobile-game-actions { display: none; }
 
 @media (max-width: 850px), (pointer: coarse) {
   .snake-section { max-width: calc(100vw - 24px); margin-inline: 12px; padding-inline: 12px; overflow: hidden; }
   .game-host { height: auto; }
-  .touch-controls { grid-template-columns: repeat(3, 64px); }
-  .touch-controls button { min-height: 56px; }
+  .touch-controls { position: absolute; inset: 0; display: block; margin: 0; pointer-events: none; }
+  .touch-controls button { position: absolute; width: 58px; min-height: 58px; border-color: #ffffff38; background: #0b1a14b8; opacity: .48; pointer-events: auto; backdrop-filter: blur(5px); }
+  .touch-controls button:active { opacity: .95; }
+  .touch-controls .up { left: 50%; bottom: 82px; transform: translateX(-50%); }
+  .touch-controls .left { left: calc(50% - 93px); bottom: 18px; }
+  .touch-controls .down { left: 50%; bottom: 18px; transform: translateX(-50%); }
+  .touch-controls .right { left: calc(50% + 35px); bottom: 18px; }
+  .touch-controls .pause { top: 10px; right: 10px; bottom: auto; left: auto; width: auto; min-height: 44px; padding-inline: 12px; }
+  .intro .actions { display: none; }
+  .mobile-game-actions { display: flex; justify-content: center; gap: 8px; margin: 12px auto 0; max-width: 280px; }
+  .mobile-game-actions button { flex: 1 1 0; min-width: 0; }
 }

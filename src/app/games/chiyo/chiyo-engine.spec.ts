@@ -17,6 +17,13 @@ describe('ChiyoEngine', () => {
     expect(game.ended).toBe(false);
   });
 
+  it('uses a wider procedural corridor after the safe opening', () => {
+    const game = new ChiyoEngine(() => 0.9);
+    const proceduralTerrain = game.terrain.slice(11);
+    expect(proceduralTerrain.length).toBeGreaterThan(0);
+    expect(proceduralTerrain.every(slice => 500 - slice.top - slice.bottom >= 280)).toBe(true);
+  });
+
   it('awards distance points while flying', () => {
     const game = new ChiyoEngine(() => 0.9);
     game.flap();
