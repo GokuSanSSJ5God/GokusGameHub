@@ -63,8 +63,14 @@ class ChiyoScene extends Phaser.Scene {
     this.lastTime = time;
     if (!this.engine.started || this.engine.ended || delta <= 0) {return;}
     const collectedItems = this.engine.collectedItems;
+    const wasInvincible = this.engine.invincible;
+    const wasSpeedBoosted = this.engine.speedBoosted;
+    const wasGliding = this.engine.gliding;
     this.engine.step(delta);
     if (this.engine.collectedItems > collectedItems) {this.playSound('score');}
+    if (!wasInvincible && this.engine.invincible) {this.playSound('score');}
+    if (!wasSpeedBoosted && this.engine.speedBoosted) {this.playSound('drop');}
+    if (!wasGliding && this.engine.gliding) {this.playSound('turn');}
     if (this.engine.ended) { this.playSound('gameOver'); this.hintText.setText(`${this.translate('gameOver')}\n${this.translate('score')} ${this.engine.score}\nClick / R — ${this.translate('restart')}`); }
     this.updateScore();
     this.draw();
@@ -148,7 +154,12 @@ class ChiyoScene extends Phaser.Scene {
   }
 
   private totalScore(): number { return this.engine.score; }
-  private updateScore(): void { this.scoreText.setText(`${this.translate('score')}  ${this.engine.score}     ${this.translate('distance')}  ${Math.floor(this.engine.distance / 10)} m     ${this.translate('items')}  ${this.engine.collectedItems}`); }
+  private updateScore(): void {
+    const shieldStatus = this.engine.invincible ? `     ${this.translate('shield')}  ${Math.ceil(this.engine.invincibilityRemaining)} s` : '';
+    const speedStatus = this.engine.speedBoosted ? `     ${this.translate('speedUp')}  ${Math.ceil(this.engine.speedBoostRemaining)} s` : '';
+    const glideStatus = this.engine.gliding ? `     ${this.translate('glide')}  ${Math.ceil(this.engine.glideRemaining)} s` : '';
+    this.scoreText.setText(`${this.translate('score')}  ${this.engine.score}     ${this.translate('distance')}  ${Math.floor(this.engine.distance / 10)} m     ${this.translate('items')}  ${this.engine.collectedItems}${shieldStatus}${speedStatus}${glideStatus}`);
+  }
 
   private draw(): void {
     this.graphics.clear();
@@ -160,7 +171,14 @@ class ChiyoScene extends Phaser.Scene {
       this.graphics.fillStyle(0x14532d, 1).fillRect(slice.x, HEIGHT - slice.bottom, SLICE_WIDTH + 1, slice.bottom);
       this.graphics.fillStyle(0x22c55e, 1).fillRect(slice.x, HEIGHT - slice.bottom, SLICE_WIDTH + 1, 7);
     });
-    this.engine.items.forEach(item => { if (!item.collected) {this.drawSeed(item.x, item.y);} });
+    this.engine.items.forEach(item => {
+      if (!item.collected) {
+        if (item.type === 'shield') {this.drawShield(item.x, item.y);}
+        else if (item.type === 'speed') {this.drawSpeedPowerDown(item.x, item.y);}
+        else if (item.type === 'glide') {this.drawGlidePowerUp(item.x, item.y);}
+        else {this.drawSeed(item.x, item.y);}
+      }
+    });
     this.drawBird();
   }
 
@@ -178,11 +196,49 @@ class ChiyoScene extends Phaser.Scene {
     this.graphics.fillStyle(0xffffff, .7).fillCircle(x - 3, y - 3, 2);
   }
 
+  private drawShield(x: number, y: number): void {
+    this.graphics.fillStyle(0x38bdf8, .22).fillCircle(x, y, 22);
+    this.graphics.lineStyle(3, 0x7dd3fc, 1).strokeCircle(x, y, 13);
+    this.graphics.fillStyle(0x0ea5e9, 1).fillTriangle(x, y + 15, x - 11, y - 7, x + 11, y - 7);
+    this.graphics.fillStyle(0xffffff, .75).fillCircle(x - 4, y - 5, 3);
+  }
+
+  private drawSpeedPowerDown(x: number, y: number): void {
+    this.graphics.fillStyle(0x000000, .35).fillCircle(x, y, 22);
+    this.graphics.fillStyle(0x030712, 1).fillCircle(x, y, 14);
+    this.graphics.lineStyle(3, 0x94a3b8, .9).strokeCircle(x, y, 14);
+    this.graphics.fillStyle(0xffffff, .9).fillTriangle(x + 2, y - 11, x - 7, y + 2, x + 1, y + 1);
+    this.graphics.fillStyle(0xffffff, .9).fillTriangle(x - 1, y + 11, x + 8, y - 2, x, y - 1);
+  }
+
+  private drawGlidePowerUp(x: number, y: number): void {
+    this.graphics.fillStyle(0x22c55e, .22).fillCircle(x, y, 22);
+    this.graphics.fillStyle(0x16a34a, 1).fillCircle(x, y, 14);
+    this.graphics.lineStyle(3, 0x86efac, 1).strokeCircle(x, y, 14);
+    this.graphics.lineStyle(3, 0xffffff, .9).lineBetween(x - 8, y, x + 8, y);
+    this.graphics.fillStyle(0xffffff, .9).fillTriangle(x + 11, y, x + 5, y - 5, x + 5, y + 5);
+  }
+
   private drawBird(): void {
     const rotation = Phaser.Math.Clamp(this.engine.velocityY / 900, -.35, .65);
     const cos = Math.cos(rotation); const sin = Math.sin(rotation);
     const point = (x: number, y: number): [number, number] => [CHIYO_BIRD_X + x * cos - y * sin, this.engine.birdY + x * sin + y * cos];
     const [bx, by] = point(0, 0);
+    if (this.engine.invincible) {
+      const pulse = 27 + Math.sin(this.time.now / 100) * 3;
+      this.graphics.fillStyle(0x38bdf8, .18).fillCircle(bx, by, pulse);
+      this.graphics.lineStyle(3, 0x7dd3fc, .9).strokeCircle(bx, by, pulse);
+    }
+    if (this.engine.speedBoosted) {
+      const pulse = 31 + Math.sin(this.time.now / 75) * 3;
+      this.graphics.fillStyle(0x000000, .22).fillCircle(bx, by, pulse);
+      this.graphics.lineStyle(3, 0x94a3b8, .8).strokeCircle(bx, by, pulse);
+    }
+    if (this.engine.gliding) {
+      const pulse = 35 + Math.sin(this.time.now / 110) * 2;
+      this.graphics.lineStyle(3, 0x86efac, .85).strokeCircle(bx, by, pulse);
+      this.graphics.lineStyle(2, 0x22c55e, .75).lineBetween(bx - pulse - 10, by, bx - pulse + 4, by);
+    }
     this.graphics.fillStyle(0xfde047, 1).fillEllipse(bx, by, 42, 31);
     const [wx, wy] = point(-5, 7); this.graphics.fillStyle(0xf59e0b, 1).fillEllipse(wx, wy, 24, 13);
     const [ex, ey] = point(9, -6); this.graphics.fillStyle(0xffffff, 1).fillCircle(ex, ey, 5).fillStyle(0x111827, 1).fillCircle(ex + 1, ey, 2);

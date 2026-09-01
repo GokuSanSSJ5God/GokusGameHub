@@ -34,7 +34,7 @@ describe('ChiyoEngine', () => {
 
   it('awards 100 bonus points for collecting an item', () => {
     const game = new ChiyoEngine(() => 0.9);
-    game.items.push({ x: CHIYO_BIRD_X, y: game.birdY, collected: false });
+    game.items.push({ x: CHIYO_BIRD_X, y: game.birdY, collected: false, type: 'seed' });
     game.flap();
     game.step(0.001);
     expect(game.itemScore).toBe(100);
@@ -47,6 +47,76 @@ describe('ChiyoEngine', () => {
     game.flap();
     game.step(0.001);
     expect(game.ended).toBe(true);
+  });
+
+  it('collects a shield and survives terrain while it is active', () => {
+    const game = new ChiyoEngine(() => 0.9);
+    game.birdY = 60;
+    game.items.push({ x: CHIYO_BIRD_X, y: game.birdY, collected: false, type: 'shield' });
+    game.flap();
+    game.step(0.001);
+    expect(game.invincible).toBe(true);
+    expect(game.ended).toBe(false);
+  });
+
+  it('keeps invincible Chiyo inside the board', () => {
+    const game = new ChiyoEngine(() => 0.9);
+    game.items.push({ x: CHIYO_BIRD_X, y: game.birdY, collected: false, type: 'shield' });
+    game.flap();
+    game.step(0.001);
+    game.birdY = 600;
+    game.velocityY = 500;
+    game.step(0.001);
+    expect(game.birdY).toBe(485);
+    expect(game.ended).toBe(false);
+  });
+
+  it('ends invincibility after five seconds of active play', () => {
+    const game = new ChiyoEngine(() => 0.9);
+    game.items.push({ x: CHIYO_BIRD_X, y: game.birdY, collected: false, type: 'shield' });
+    game.flap();
+    game.step(0.001);
+    for (let frame = 0; frame < 144; frame++) {
+      game.birdY = 250;
+      game.velocityY = 0;
+      game.step(0.035);
+    }
+    expect(game.invincible).toBe(false);
+  });
+
+  it('collects a speed power-down and moves faster for five seconds', () => {
+    const game = new ChiyoEngine(() => 0.9);
+    game.items.push({ x: CHIYO_BIRD_X, y: game.birdY, collected: false, type: 'speed' });
+    game.flap();
+    game.step(0.001);
+    game.step(0.001);
+    expect(game.speedBoosted).toBe(true);
+    expect(game.speed).toBeGreaterThan(280);
+    for (let frame = 0; frame < 144; frame++) {
+      game.birdY = 250;
+      game.velocityY = 0;
+      game.step(0.035);
+    }
+    expect(game.speedBoosted).toBe(false);
+  });
+
+  it('collects a glide power-up and keeps a straight altitude for three seconds', () => {
+    const game = new ChiyoEngine(() => 0.9);
+    game.items.push({ x: CHIYO_BIRD_X, y: game.birdY, collected: false, type: 'glide' });
+    game.flap();
+    game.step(0.001);
+    const lockedY = game.birdY;
+    for (let frame = 0; frame < 80; frame++) {
+      game.terrain.forEach(slice => { slice.top = 0; slice.bottom = 0; });
+      game.step(0.035);
+    }
+    expect(game.gliding).toBe(true);
+    expect(game.birdY).toBe(lockedY);
+    for (let frame = 0; frame < 6; frame++) {
+      game.terrain.forEach(slice => { slice.top = 0; slice.bottom = 0; });
+      game.step(0.035);
+    }
+    expect(game.gliding).toBe(false);
   });
 
   it('restart restores the initial state', () => {
