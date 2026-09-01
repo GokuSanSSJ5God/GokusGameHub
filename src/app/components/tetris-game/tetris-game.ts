@@ -38,7 +38,16 @@ class TetrisScene extends Phaser.Scene {
 
   constructor(private readonly translate: (key: TranslationKey) => string, private readonly pauseChanged: (paused: boolean) => void) { super('tetris'); }
 
+  preload(): void {
+    this.load.image('tetris-background', 'assets/games/chiyo-tetris.jpg');
+  }
+
   create(): void {
+    const background = this.add.image(150, 284, 'tetris-background');
+    const cropWidth = background.height * (COLS * BLOCK) / (ROWS * BLOCK);
+    background
+      .setCrop((background.width - cropWidth) / 2, 0, cropWidth, background.height)
+      .setScale((ROWS * BLOCK) / background.height);
     this.graphics = this.add.graphics();
     this.scoreText = this.add.text(10, 568, '', { color: '#c4b5fd', fontFamily: 'system-ui', fontSize: '14px', fontStyle: 'bold' });
     this.statusText = this.add.text(150, 280, '', { align: 'center', color: '#ffffff', fontFamily: 'system-ui', fontSize: '25px', fontStyle: 'bold' }).setOrigin(0.5).setDepth(2);
@@ -190,8 +199,9 @@ class TetrisScene extends Phaser.Scene {
 
   private draw(): void {
     this.graphics.clear();
-    this.graphics.fillStyle(0x090e1b, 1).fillRect(10, 4, COLS * BLOCK, ROWS * BLOCK);
-    this.graphics.lineStyle(1, 0xffffff, 0.04);
+    this.graphics.fillStyle(0x090e1b, 0.72).fillRect(10, 4, COLS * BLOCK, ROWS * BLOCK);
+    this.graphics.fillStyle(0x090e1b, 0.88).fillRect(0, 564, 300, 36);
+    this.graphics.lineStyle(1, 0xffffff, 0.16);
     for (let x = 0; x <= COLS; x++) this.graphics.lineBetween(10 + x * BLOCK, 4, 10 + x * BLOCK, 4 + ROWS * BLOCK);
     for (let y = 0; y <= ROWS; y++) this.graphics.lineBetween(10, 4 + y * BLOCK, 10 + COLS * BLOCK, 4 + y * BLOCK);
     this.board.forEach((row, y) => row.forEach((cell, x) => this.drawCell(cell, x, y)));

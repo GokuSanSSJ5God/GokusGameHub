@@ -4,7 +4,7 @@ Goku's GameHub is a responsive browser-based arcade built with Angular and Phase
 
 ## Games
 
-- **Neon Blocks** — a falling-block puzzle game with line clearing, scoring, keyboard controls, and touch controls.
+- **Blocks with Chiyo** — a falling-block puzzle game with line clearing, scoring, keyboard controls, and touch controls.
 - **Neon Snake** — a classic snake game with increasing speed, food collection, keyboard controls, and touch controls.
 - **Chiyo's Flight** — help Chiyo fly through procedural terrain, collect golden seeds, and earn points for distance travelled.
 
@@ -87,7 +87,7 @@ public/assets/
 
 ## Controls
 
-### Neon Blocks
+### Blocks with Chiyo
 
 - Arrow keys or `WASD` — move and rotate
 - `Space` — hard drop

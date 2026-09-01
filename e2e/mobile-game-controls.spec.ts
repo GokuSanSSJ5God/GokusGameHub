@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 const games = [
-  { title: 'Neon Blocks', activeId: '#active-game', section: '.tetris-section' },
+  { title: 'Blocks with Chiyo', activeId: '#active-game', section: '.tetris-section' },
   { title: 'Neon Snake', activeId: '#active-snake', section: '.snake-section' },
 ] as const;
 
