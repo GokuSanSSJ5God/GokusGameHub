@@ -1,9 +1,11 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnDestroy, ViewChild, inject, output, signal } from '@angular/core';
 import Phaser from 'phaser';
+import { GameAudioService, GameSoundEffect } from '../../services/game-audio.service';
 import { I18nService, TranslationKey } from '../../services/i18n.service';
 
 type Cell = number;
 type Matrix = Cell[][];
+type GameSpeed = 0.75 | 1 | 1.5;
 
 const COLS = 10;
 const ROWS = 20;
@@ -27,16 +29,26 @@ class TetrisScene extends Phaser.Scene {
   private score = 0;
   private lines = 0;
   private dropAt = 0;
-  private dropDelay = 650;
+  private baseDropDelay = 650;
+  private speed: GameSpeed = 1;
   private ended = false;
   private paused = false;
   private graphics!: Phaser.GameObjects.Graphics;
   private scoreText!: Phaser.GameObjects.Text;
   private statusText!: Phaser.GameObjects.Text;
 
-  constructor(private readonly translate: (key: TranslationKey) => string, private readonly pauseChanged: (paused: boolean) => void) { super('tetris'); }
+  constructor(private readonly translate: (key: TranslationKey) => string, private readonly pauseChanged: (paused: boolean) => void, private readonly playSound: (effect: GameSoundEffect) => void) { super('tetris'); }
+
+  preload(): void {
+    this.load.image('tetris-background', 'assets/games/chiyo-tetris.jpg');
+  }
 
   create(): void {
+    const background = this.add.image(150, 284, 'tetris-background');
+    const cropWidth = background.height * (COLS * BLOCK) / (ROWS * BLOCK);
+    background
+      .setCrop((background.width - cropWidth) / 2, 0, cropWidth, background.height)
+      .setScale((ROWS * BLOCK) / background.height);
     this.graphics = this.add.graphics();
     this.scoreText = this.add.text(10, 568, '', { color: '#c4b5fd', fontFamily: 'system-ui', fontSize: '14px', fontStyle: 'bold' });
     this.statusText = this.add.text(150, 280, '', { align: 'center', color: '#ffffff', fontFamily: 'system-ui', fontSize: '25px', fontStyle: 'bold' }).setOrigin(0.5).setDepth(2);
@@ -67,7 +79,7 @@ class TetrisScene extends Phaser.Scene {
   override update(time: number): void {
     if (!this.ended && !this.paused && time >= this.dropAt) {
       this.stepDown();
-      this.dropAt = time + this.dropDelay;
+      this.dropAt = time + this.baseDropDelay / this.speed;
     }
   }
 
@@ -85,6 +97,7 @@ class TetrisScene extends Phaser.Scene {
       if (!this.collides(rotated, this.pieceX + offset, this.pieceY)) {
         this.piece = rotated;
         this.pieceX += offset;
+        this.playSound('turn');
         this.draw();
         return;
       }
@@ -102,6 +115,7 @@ class TetrisScene extends Phaser.Scene {
     while (!this.collides(this.piece, this.pieceX, this.pieceY + 1)) {
       this.pieceY++;
     }
+    this.playSound('drop');
     this.lockPiece();
   }
 
@@ -109,7 +123,7 @@ class TetrisScene extends Phaser.Scene {
     this.board = Array.from({ length: ROWS }, () => Array<Cell>(COLS).fill(0));
     this.score = 0;
     this.lines = 0;
-    this.dropDelay = 650;
+    this.baseDropDelay = 650;
     this.ended = false;
     this.paused = false;
     this.pauseChanged(false);
@@ -128,6 +142,11 @@ class TetrisScene extends Phaser.Scene {
   }
 
   pauseIfRunning(): void { if (!this.ended && !this.paused) this.togglePause(); }
+
+  setSpeed(speed: GameSpeed): void {
+    this.speed = speed;
+    this.dropAt = this.time.now + this.baseDropDelay / this.speed;
+  }
 
   private stepDown(): boolean {
     if (!this.collides(this.piece, this.pieceX, this.pieceY + 1)) {
@@ -155,6 +174,7 @@ class TetrisScene extends Phaser.Scene {
     this.pieceY = 0;
     if (this.collides(this.piece, this.pieceX, this.pieceY)) {
       this.ended = true;
+      this.playSound('gameOver');
       this.statusText.setText(`${this.translate('gameOver')}\nR — ${this.translate('restart')}`);
     }
   }
@@ -164,11 +184,12 @@ class TetrisScene extends Phaser.Scene {
     const cleared = ROWS - remainingRows.length;
 
     if (cleared) {
+      this.playSound('score');
       const emptyRows = Array.from({ length: cleared }, () => Array<Cell>(COLS).fill(0));
       this.board = [...emptyRows, ...remainingRows];
       this.lines += cleared;
       this.score += [0, 100, 300, 500, 800][cleared];
-      this.dropDelay = Math.max(120, 650 - this.lines * 15);
+      this.baseDropDelay = Math.max(120, 650 - this.lines * 15);
     }
   }
 
@@ -183,8 +204,9 @@ class TetrisScene extends Phaser.Scene {
 
   private draw(): void {
     this.graphics.clear();
-    this.graphics.fillStyle(0x090e1b, 1).fillRect(10, 4, COLS * BLOCK, ROWS * BLOCK);
-    this.graphics.lineStyle(1, 0xffffff, 0.04);
+    this.graphics.fillStyle(0x090e1b, 0.72).fillRect(10, 4, COLS * BLOCK, ROWS * BLOCK);
+    this.graphics.fillStyle(0x090e1b, 0.88).fillRect(0, 564, 300, 36);
+    this.graphics.lineStyle(1, 0xffffff, 0.16);
     for (let x = 0; x <= COLS; x++) this.graphics.lineBetween(10 + x * BLOCK, 4, 10 + x * BLOCK, 4 + ROWS * BLOCK);
     for (let y = 0; y <= ROWS; y++) this.graphics.lineBetween(10, 4 + y * BLOCK, 10 + COLS * BLOCK, 4 + y * BLOCK);
     this.board.forEach((row, y) => row.forEach((cell, x) => this.drawCell(cell, x, y)));
@@ -205,7 +227,7 @@ class TetrisScene extends Phaser.Scene {
 @Component({
   selector: 'app-tetris-game',
   templateUrl: './tetris-game.html',
-  styleUrl: './tetris-game.css',
+  styleUrls: ['./tetris-game.css', './tetris-mobile-controls.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TetrisGame implements AfterViewInit, OnDestroy {
@@ -213,12 +235,16 @@ export class TetrisGame implements AfterViewInit, OnDestroy {
   readonly ready = output<void>();
   @ViewChild('gameHost', { static: true }) private gameHost!: ElementRef<HTMLDivElement>;
   protected readonly i18n = inject(I18nService);
+  protected readonly audio = inject(GameAudioService);
   protected readonly paused = signal(false);
+  protected readonly speed = signal<GameSpeed>(1);
+  protected readonly speedOptions: readonly GameSpeed[] = [0.75, 1, 1.5];
   private game?: Phaser.Game;
   private scene?: TetrisScene;
 
   ngAfterViewInit(): void {
-    this.scene = new TetrisScene(key => this.i18n.t(key), paused => this.paused.set(paused));
+    this.audio.start('tetris');
+    this.scene = new TetrisScene(key => this.i18n.t(key), paused => this.paused.set(paused), effect => this.audio.playEffect(effect));
     this.game = new Phaser.Game({
       type: Phaser.AUTO,
       parent: this.gameHost.nativeElement,
@@ -241,8 +267,15 @@ export class TetrisGame implements AfterViewInit, OnDestroy {
     if (action === 'restart') this.scene?.restart();
   }
 
+  setSpeed(speed: GameSpeed): void {
+    this.speed.set(speed);
+    this.scene?.setSpeed(speed);
+  }
+
+  toggleAudio(): void { this.audio.toggle('tetris'); }
+
   @HostListener('document:visibilitychange')
   protected pauseWhenHidden(): void { if (document.hidden) this.scene?.pauseIfRunning(); }
 
-  ngOnDestroy(): void { this.game?.destroy(true); }
+  ngOnDestroy(): void { this.audio.stop(); this.game?.destroy(true); }
 }

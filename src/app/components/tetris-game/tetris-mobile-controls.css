@@ -1,0 +1,40 @@
+@media (max-width: 760px), (pointer: coarse) {
+  .game-stage { width: min(300px, 62.5vw); }
+
+  .move-controls,
+  .action-controls { bottom: 48px; }
+
+  .move-controls { left: 20px; width: 52%; }
+  .action-controls { right: 20px; width: 29%; }
+
+  .speed-controls,
+  .audio-toggle { background: #090e1bf5; backdrop-filter: none; }
+
+  .touch-controls button {
+    min-height: 46px;
+    border-color: #ffffff45;
+    background: #101827f2;
+    opacity: .9;
+    backdrop-filter: none;
+  }
+
+  .touch-controls button:active {
+    background: #7c3aed;
+    opacity: 1;
+  }
+}
+
+@media (max-width: 380px) {
+  .speed-controls button {
+    min-width: 29px;
+    min-height: 32px;
+    padding: 2px 3px;
+    font-size: 9px;
+  }
+
+  .touch-controls .pause {
+    min-height: 36px;
+    padding-inline: 8px;
+    font-size: 11px;
+  }
+}

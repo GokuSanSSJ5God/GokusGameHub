@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, afterNextRender, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, HostListener, afterNextRender, inject, signal } from '@angular/core';
 import { Footer } from './components/footer/footer';
 import { Games } from './components/games/games';
 import { TitleHeader } from './components/title-header/title-header';
@@ -24,7 +24,17 @@ export class App {
   }
 
   protected openGame(gameId: string): void {
+    if (this.selectedGame() === gameId) {
+      this.selectedGame.set(null);
+      requestAnimationFrame(() => this.selectedGame.set(gameId));
+      return;
+    }
     this.selectedGame.set(gameId);
+  }
+
+  @HostListener('window:pageshow', ['$event'])
+  protected resetRestoredGame(event: PageTransitionEvent): void {
+    if (event.persisted) this.selectedGame.set(null);
   }
 
   protected scrollToGame(): void {

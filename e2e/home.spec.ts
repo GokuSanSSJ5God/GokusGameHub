@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 const availableGames = [
-  { title: 'Neon Blocks', activeId: '#active-game', snapshot: 'tetris.png' },
+  { title: 'Blocks with Chiyo', activeId: '#active-game', snapshot: 'tetris.png' },
   { title: 'Neon Snake', activeId: '#active-snake', snapshot: 'snake.png' },
   { title: "Chiyo's Flight", activeId: '#active-chiyo', snapshot: 'chiyo.png' },
 ] as const;
@@ -64,6 +64,17 @@ test.describe('Home page', () => {
     }));
 
     expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
+  });
+
+  test('reopening the same game recreates a stale scene', async ({ page }) => {
+    const card = page.locator('.game-card').filter({ hasText: 'Blocks with Chiyo' });
+    await card.getByRole('button').click();
+    const firstCanvas = await page.locator('#active-game canvas').elementHandle();
+    expect(firstCanvas).not.toBeNull();
+
+    await card.getByRole('button').click();
+    await expect.poll(() => firstCanvas!.evaluate(canvas => canvas.isConnected)).toBe(false);
+    await expect(page.locator('#active-game canvas')).toBeVisible();
   });
 
   test('visual scroll journey matches the approved snapshots', async ({ page }) => {

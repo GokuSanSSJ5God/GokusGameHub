@@ -16,7 +16,7 @@ export class Games {
   readonly gameSelected = output<string>();
   protected readonly i18n = inject(I18nService);
   protected readonly games: readonly Game[] = [
-    { id: 'tetris', title: 'Neon Blocks', category: 'puzzle', cover: 'assets/games/neon-blocks.png', color: '#8b5cf6', available: true },
+    { id: 'tetris', title: 'Blocks with Chiyo', category: 'puzzle', cover: 'assets/games/blocks-with-chiyo.png', color: '#8b5cf6', available: true },
     { id: 'snake', title: 'Neon Snake', category: 'arcade', cover: 'assets/games/neon-snake.png', color: '#22c55e', available: true },
     { id: 'chiyo', title: "Chiyo's Flight", category: 'arcade', cover: 'assets/games/chiyo-flight.png', color: '#eab308', available: true },
     { id: 'pixel-kingdom', title: 'Pixel Kingdom', category: 'strategy', icon: '♛', color: '#06b6d4', available: false },

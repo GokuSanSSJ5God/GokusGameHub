@@ -1,6 +1,7 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnDestroy, ViewChild, inject, output, signal } from '@angular/core';
 import Phaser from 'phaser';
 import { CHIYO_BIRD_X, ChiyoEngine } from '../../games/chiyo/chiyo-engine';
+import { GameAudioService, GameSoundEffect } from '../../services/game-audio.service';
 import { I18nService, TranslationKey } from '../../services/i18n.service';
 
 interface TerrainSlice { x: number; top: number; bottom: number; }
@@ -28,7 +29,7 @@ class ChiyoScene extends Phaser.Scene {
   private started = false;
   private lastTime = 0;
 
-  constructor(private readonly translate: (key: TranslationKey) => string, private readonly pauseChanged: (paused: boolean) => void) { super('chiyo-flight'); }
+  constructor(private readonly translate: (key: TranslationKey) => string, private readonly pauseChanged: (paused: boolean) => void, private readonly playSound: (effect: GameSoundEffect) => void) { super('chiyo-flight'); }
 
   create(): void {
     this.graphics = this.add.graphics();
@@ -61,8 +62,10 @@ class ChiyoScene extends Phaser.Scene {
     const delta = Math.min((time - this.lastTime) / 1000, 0.035);
     this.lastTime = time;
     if (!this.engine.started || this.engine.ended || delta <= 0) return;
+    const collectedItems = this.engine.collectedItems;
     this.engine.step(delta);
-    if (this.engine.ended) this.hintText.setText(`${this.translate('gameOver')}\n${this.translate('score')} ${this.engine.score}\nClick / R — ${this.translate('restart')}`);
+    if (this.engine.collectedItems > collectedItems) this.playSound('score');
+    if (this.engine.ended) { this.playSound('gameOver'); this.hintText.setText(`${this.translate('gameOver')}\n${this.translate('score')} ${this.engine.score}\nClick / R — ${this.translate('restart')}`); }
     this.updateScore();
     this.draw();
   }
@@ -71,6 +74,7 @@ class ChiyoScene extends Phaser.Scene {
     if (this.engine.paused) return;
     if (this.engine.ended) { this.restart(); return; }
     this.engine.flap();
+    this.playSound('flap');
     this.hintText.setText('');
   }
 
@@ -186,22 +190,25 @@ class ChiyoScene extends Phaser.Scene {
   }
 }
 
-@Component({ selector: 'app-chiyo-game', templateUrl: './chiyo-game.html', styleUrl: './chiyo-game.css', changeDetection: ChangeDetectionStrategy.OnPush })
+@Component({ selector: 'app-chiyo-game', templateUrl: './chiyo-game.html', styleUrls: ['./chiyo-game.css', '../game-audio.css'], changeDetection: ChangeDetectionStrategy.OnPush })
 export class ChiyoGame implements AfterViewInit, OnDestroy {
   readonly closed = output<void>(); readonly ready = output<void>();
   protected readonly paused = signal(false);
   protected readonly i18n = inject(I18nService);
+  protected readonly audio = inject(GameAudioService);
   @ViewChild('gameHost', { static: true }) private gameHost!: ElementRef<HTMLDivElement>;
   private game?: Phaser.Game; private scene?: ChiyoScene;
   ngAfterViewInit(): void {
-    this.scene = new ChiyoScene(key => this.i18n.t(key), paused => this.paused.set(paused));
+    this.audio.start('chiyo');
+    this.scene = new ChiyoScene(key => this.i18n.t(key), paused => this.paused.set(paused), effect => this.audio.playEffect(effect));
     this.game = new Phaser.Game({ type: Phaser.AUTO, parent: this.gameHost.nativeElement, width: WIDTH, height: HEIGHT, backgroundColor: '#071b33', scene: this.scene, scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH } });
     requestAnimationFrame(() => this.ready.emit());
   }
   flap(): void { this.scene?.flap(); }
   togglePause(): void { this.scene?.togglePause(); }
   restart(): void { this.scene?.restart(); }
+  toggleAudio(): void { this.audio.toggle('chiyo'); }
   @HostListener('document:visibilitychange')
   protected pauseWhenHidden(): void { if (document.hidden) this.scene?.pauseIfRunning(); }
-  ngOnDestroy(): void { this.game?.destroy(true); }
+  ngOnDestroy(): void { this.audio.stop(); this.game?.destroy(true); }
 }
