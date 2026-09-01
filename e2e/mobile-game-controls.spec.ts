@@ -36,6 +36,7 @@ for (const game of games) {
     await expect(restartButton).toBeVisible();
 
     if (game.activeId === '#active-snake') {
+      await page.waitForTimeout(500);
       const directionButtons = await activeGame.locator('.touch-controls button:not(.pause)').all();
       const boxes = await Promise.all(directionButtons.map(async button => ({
         label: await button.getAttribute('aria-label'),
@@ -46,7 +47,7 @@ for (const game of games) {
           const a = boxes[first]!.box!;
           const b = boxes[second]!.box!;
           const overlaps = a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
-          expect(overlaps, `${boxes[first]!.label} overlaps ${boxes[second]!.label}`).toBe(false);
+          expect(overlaps, `${boxes[first]!.label} ${JSON.stringify(a)} overlaps ${boxes[second]!.label} ${JSON.stringify(b)}`).toBe(false);
         }
       }
     }
