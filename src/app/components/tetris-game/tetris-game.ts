@@ -4,6 +4,7 @@ import { I18nService, TranslationKey } from '../../services/i18n.service';
 
 type Cell = number;
 type Matrix = Cell[][];
+type GameSpeed = 0.75 | 1 | 1.5;
 
 const COLS = 10;
 const ROWS = 20;
@@ -27,7 +28,8 @@ class TetrisScene extends Phaser.Scene {
   private score = 0;
   private lines = 0;
   private dropAt = 0;
-  private dropDelay = 650;
+  private baseDropDelay = 650;
+  private speed: GameSpeed = 1;
   private ended = false;
   private paused = false;
   private graphics!: Phaser.GameObjects.Graphics;
@@ -67,7 +69,7 @@ class TetrisScene extends Phaser.Scene {
   override update(time: number): void {
     if (!this.ended && !this.paused && time >= this.dropAt) {
       this.stepDown();
-      this.dropAt = time + this.dropDelay;
+      this.dropAt = time + this.baseDropDelay / this.speed;
     }
   }
 
@@ -109,7 +111,7 @@ class TetrisScene extends Phaser.Scene {
     this.board = Array.from({ length: ROWS }, () => Array<Cell>(COLS).fill(0));
     this.score = 0;
     this.lines = 0;
-    this.dropDelay = 650;
+    this.baseDropDelay = 650;
     this.ended = false;
     this.paused = false;
     this.pauseChanged(false);
@@ -128,6 +130,11 @@ class TetrisScene extends Phaser.Scene {
   }
 
   pauseIfRunning(): void { if (!this.ended && !this.paused) this.togglePause(); }
+
+  setSpeed(speed: GameSpeed): void {
+    this.speed = speed;
+    this.dropAt = this.time.now + this.baseDropDelay / this.speed;
+  }
 
   private stepDown(): boolean {
     if (!this.collides(this.piece, this.pieceX, this.pieceY + 1)) {
@@ -168,7 +175,7 @@ class TetrisScene extends Phaser.Scene {
       this.board = [...emptyRows, ...remainingRows];
       this.lines += cleared;
       this.score += [0, 100, 300, 500, 800][cleared];
-      this.dropDelay = Math.max(120, 650 - this.lines * 15);
+      this.baseDropDelay = Math.max(120, 650 - this.lines * 15);
     }
   }
 
@@ -214,6 +221,8 @@ export class TetrisGame implements AfterViewInit, OnDestroy {
   @ViewChild('gameHost', { static: true }) private gameHost!: ElementRef<HTMLDivElement>;
   protected readonly i18n = inject(I18nService);
   protected readonly paused = signal(false);
+  protected readonly speed = signal<GameSpeed>(1);
+  protected readonly speedOptions: readonly GameSpeed[] = [0.75, 1, 1.5];
   private game?: Phaser.Game;
   private scene?: TetrisScene;
 
@@ -239,6 +248,11 @@ export class TetrisGame implements AfterViewInit, OnDestroy {
     if (action === 'drop') this.scene?.hardDrop();
     if (action === 'pause') this.scene?.togglePause();
     if (action === 'restart') this.scene?.restart();
+  }
+
+  setSpeed(speed: GameSpeed): void {
+    this.speed.set(speed);
+    this.scene?.setSpeed(speed);
   }
 
   @HostListener('document:visibilitychange')
