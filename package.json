@@ -6,6 +6,8 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "test": "ng test --watch=false",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
@@ -25,9 +27,13 @@
     "@angular/build": "^22.1.0",
     "@angular/cli": "^22.1.0",
     "@angular/compiler-cli": "^22.1.0",
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.62.1",
+    "angular-eslint": "^22.2.0",
+    "eslint": "^10.9.1",
     "jsdom": "^30.0.1",
     "typescript": "~6.0.0",
+    "typescript-eslint": "^8.69.0",
     "vitest": "^4.1.11"
   }
 }

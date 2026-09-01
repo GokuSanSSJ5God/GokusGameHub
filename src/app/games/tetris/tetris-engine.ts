@@ -31,28 +31,28 @@ export class TetrisEngine {
   }
 
   move(direction: number): boolean {
-    if (this.ended || this.collides(this.piece, this.pieceX + direction, this.pieceY)) return false;
+    if (this.ended || this.collides(this.piece, this.pieceX + direction, this.pieceY)) {return false;}
     this.pieceX += direction; return true;
   }
 
   rotate(): boolean {
-    if (this.ended) return false;
+    if (this.ended) {return false;}
     const rotated = this.piece[0].map((_, index) => this.piece.map(row => row[index]).reverse());
-    for (const offset of [0, -1, 1, -2, 2]) if (!this.collides(rotated, this.pieceX + offset, this.pieceY)) {
+    for (const offset of [0, -1, 1, -2, 2]) {if (!this.collides(rotated, this.pieceX + offset, this.pieceY)) {
       this.piece = rotated; this.pieceX += offset; return true;
-    }
+    }}
     return false;
   }
 
   stepDown(): boolean {
-    if (this.ended) return false;
+    if (this.ended) {return false;}
     if (!this.collides(this.piece, this.pieceX, this.pieceY + 1)) { this.pieceY++; return true; }
     this.lockPiece(); return false;
   }
 
   hardDrop(): void {
-    if (this.ended) return;
-    while (!this.collides(this.piece, this.pieceX, this.pieceY + 1)) this.pieceY++;
+    if (this.ended) {return;}
+    while (!this.collides(this.piece, this.pieceX, this.pieceY + 1)) {this.pieceY++;}
     this.lockPiece();
   }
 
@@ -74,7 +74,7 @@ export class TetrisEngine {
   }
 
   private lockPiece(): void {
-    this.piece.forEach((row, y) => row.forEach((cell, x) => { if (cell && this.pieceY + y >= 0) this.board[this.pieceY + y][this.pieceX + x] = cell; }));
+    this.piece.forEach((row, y) => row.forEach((cell, x) => { if (cell && this.pieceY + y >= 0) {this.board[this.pieceY + y][this.pieceX + x] = cell;} }));
     this.clearCompletedLines(); this.spawnPiece();
   }
 }

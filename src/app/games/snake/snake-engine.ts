@@ -19,15 +19,15 @@ export class SnakeEngine {
   }
 
   turn(target: SnakeDirection): boolean {
-    if (this.ended) return false;
+    if (this.ended) {return false;}
     const directions = { left: { x: -1, y: 0 }, right: { x: 1, y: 0 }, up: { x: 0, y: -1 }, down: { x: 0, y: 1 } };
     const candidate = directions[target];
-    if (candidate.x === -this.direction.x && candidate.y === -this.direction.y) return false;
+    if (candidate.x === -this.direction.x && candidate.y === -this.direction.y) {return false;}
     this.queuedDirection = candidate; return true;
   }
 
   step(): boolean {
-    if (this.ended) return false;
+    if (this.ended) {return false;}
     this.direction = this.queuedDirection;
     const head = this.snake[0];
     const next = { x: head.x + this.direction.x, y: head.y + this.direction.y };
@@ -36,7 +36,7 @@ export class SnakeEngine {
     const collision = next.x < 0 || next.x >= this.grid || next.y < 0 || next.y >= this.grid || bodyToCheck.some(segment => segment.x === next.x && segment.y === next.y);
     if (collision) { this.ended = true; return false; }
     this.snake.unshift(next);
-    if (eating) { this.score += 10; this.placeFood(); } else this.snake.pop();
+    if (eating) { this.score += 10; this.placeFood(); } else {this.snake.pop();}
     return true;
   }
 
@@ -44,7 +44,7 @@ export class SnakeEngine {
 
   private placeFood(): void {
     const free: SnakePoint[] = [];
-    for (let y = 0; y < this.grid; y++) for (let x = 0; x < this.grid; x++) if (!this.snake.some(segment => segment.x === x && segment.y === y)) free.push({ x, y });
+    for (let y = 0; y < this.grid; y++) {for (let x = 0; x < this.grid; x++) {if (!this.snake.some(segment => segment.x === x && segment.y === y)) {free.push({ x, y });}}}
     this.food = free[Math.floor(this.random() * free.length)] ?? { x: 0, y: 0 };
   }
 }

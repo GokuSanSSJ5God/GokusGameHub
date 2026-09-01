@@ -33,7 +33,7 @@ class SnakeScene extends Phaser.Scene {
     keyboard?.on('keydown-RIGHT', () => this.turn('right')); keyboard?.on('keydown-D', () => this.turn('right'));
     keyboard?.on('keydown-UP', () => this.turn('up')); keyboard?.on('keydown-W', () => this.turn('up'));
     keyboard?.on('keydown-DOWN', () => this.turn('down')); keyboard?.on('keydown-S', () => this.turn('down'));
-    keyboard?.on('keydown-R', () => this.restart()); keyboard?.on('keydown-SPACE', () => { if (this.ended) this.restart(); });
+    keyboard?.on('keydown-R', () => this.restart()); keyboard?.on('keydown-SPACE', () => { if (this.ended) {this.restart();} });
     keyboard?.on('keydown-P', () => this.togglePause()); keyboard?.on('keydown-ESC', () => this.togglePause());
     this.restart();
   }
@@ -43,7 +43,7 @@ class SnakeScene extends Phaser.Scene {
   }
 
   turn(target: 'left' | 'right' | 'up' | 'down'): void {
-    if (this.ended || this.paused) return;
+    if (this.ended || this.paused) {return;}
     const directions = { left: { x: -1, y: 0 }, right: { x: 1, y: 0 }, up: { x: 0, y: -1 }, down: { x: 0, y: 1 } };
     const candidate = directions[target];
     if (candidate.x !== -this.direction.x || candidate.y !== -this.direction.y) { this.queuedDirection = candidate; this.playSound('turn'); }
@@ -57,14 +57,14 @@ class SnakeScene extends Phaser.Scene {
   }
 
   togglePause(): boolean {
-    if (this.ended) return this.paused;
+    if (this.ended) {return this.paused;}
     this.paused = !this.paused;
     this.statusText.setText(this.paused ? this.translate('paused') : '');
     this.pauseChanged(this.paused);
     return this.paused;
   }
 
-  pauseIfRunning(): void { if (!this.ended && !this.paused) this.togglePause(); }
+  pauseIfRunning(): void { if (!this.ended && !this.paused) {this.togglePause();} }
 
   private move(): void {
     this.direction = this.queuedDirection;
@@ -76,13 +76,13 @@ class SnakeScene extends Phaser.Scene {
     if (next.x === this.food.x && next.y === this.food.y) {
       this.playSound('score');
       this.score += 10; this.moveDelay = Math.max(65, this.moveDelay - 3); this.placeFood(); this.updateScore();
-    } else this.snake.pop();
+    } else {this.snake.pop();}
     this.draw();
   }
 
   private placeFood(): void {
     const free: Point[] = [];
-    for (let y = 0; y < GRID; y++) for (let x = 0; x < GRID; x++) if (!this.snake.some(segment => segment.x === x && segment.y === y)) free.push({ x, y });
+    for (let y = 0; y < GRID; y++) {for (let x = 0; x < GRID; x++) {if (!this.snake.some(segment => segment.x === x && segment.y === y)) {free.push({ x, y });}}}
     this.food = free[Math.floor(Math.random() * free.length)] ?? { x: 0, y: 0 };
   }
 
@@ -110,9 +110,9 @@ export class SnakeGame implements AfterViewInit, OnDestroy {
     this.game = new Phaser.Game({ type: Phaser.AUTO, parent: this.gameHost.nativeElement, width: 400, height: 450, backgroundColor: '#07130e', scene: this.scene, scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH } });
     requestAnimationFrame(() => this.ready.emit());
   }
-  control(action: 'left' | 'right' | 'up' | 'down' | 'pause' | 'restart'): void { if (action === 'restart') this.scene?.restart(); else if (action === 'pause') this.scene?.togglePause(); else this.scene?.turn(action); }
+  control(action: 'left' | 'right' | 'up' | 'down' | 'pause' | 'restart'): void { if (action === 'restart') {this.scene?.restart();} else if (action === 'pause') {this.scene?.togglePause();} else {this.scene?.turn(action);} }
   toggleAudio(): void { this.audio.toggle('snake'); }
   @HostListener('document:visibilitychange')
-  protected pauseWhenHidden(): void { if (document.hidden) this.scene?.pauseIfRunning(); }
+  protected pauseWhenHidden(): void { if (document.hidden) {this.scene?.pauseIfRunning();} }
   ngOnDestroy(): void { this.audio.stop(); this.game?.destroy(true); }
 }

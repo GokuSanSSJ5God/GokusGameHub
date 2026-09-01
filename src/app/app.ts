@@ -20,7 +20,7 @@ export class App {
   private readonly changeDetector = inject(ChangeDetectorRef);
 
   constructor() {
-    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    if ('scrollRestoration' in history) {history.scrollRestoration = 'manual';}
     afterNextRender(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }));
   }
 
@@ -32,6 +32,12 @@ export class App {
       return;
     }
     this.selectedGame.set(gameId);
+  }
+
+  protected closeGame(gameId: string): void {
+    this.selectedGame.set(null);
+    this.changeDetector.detectChanges();
+    document.querySelector(`#game-card-${gameId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   @HostListener('window:pageshow', ['$event'])

@@ -92,7 +92,7 @@ class TetrisScene extends Phaser.Scene {
   }
 
   rotate(): void {
-    if (this.ended || this.paused) return;
+    if (this.ended || this.paused) {return;}
     const rotated = this.piece[0].map((_, index) => this.piece.map(row => row[index]).reverse());
     for (const offset of [0, -1, 1, -2, 2]) {
       if (!this.collides(rotated, this.pieceX + offset, this.pieceY)) {
@@ -112,7 +112,7 @@ class TetrisScene extends Phaser.Scene {
   }
 
   hardDrop(): void {
-    if (this.ended || this.paused) return;
+    if (this.ended || this.paused) {return;}
     while (!this.collides(this.piece, this.pieceX, this.pieceY + 1)) {
       this.pieceY++;
     }
@@ -135,14 +135,14 @@ class TetrisScene extends Phaser.Scene {
   }
 
   togglePause(): boolean {
-    if (this.ended) return this.paused;
+    if (this.ended) {return this.paused;}
     this.paused = !this.paused;
     this.statusText.setText(this.paused ? this.translate('paused') : '');
     this.pauseChanged(this.paused);
     return this.paused;
   }
 
-  pauseIfRunning(): void { if (!this.ended && !this.paused) this.togglePause(); }
+  pauseIfRunning(): void { if (!this.ended && !this.paused) {this.togglePause();} }
 
   setSpeed(speed: GameSpeed): void {
     this.speed = speed;
@@ -163,7 +163,7 @@ class TetrisScene extends Phaser.Scene {
 
   private lockPiece(): void {
     this.piece.forEach((row, y) => row.forEach((cell, x) => {
-      if (cell && this.pieceY + y >= 0) this.board[this.pieceY + y][this.pieceX + x] = cell;
+      if (cell && this.pieceY + y >= 0) {this.board[this.pieceY + y][this.pieceX + x] = cell;}
     }));
     this.clearLines();
     this.spawnPiece();
@@ -198,7 +198,7 @@ class TetrisScene extends Phaser.Scene {
 
   private collides(matrix: Matrix, targetX: number, targetY: number): boolean {
     return matrix.some((row, y) => row.some((cell, x) => {
-      if (!cell) return false;
+      if (!cell) {return false;}
       const boardX = targetX + x;
       const boardY = targetY + y;
       return boardX < 0 || boardX >= COLS || boardY >= ROWS || (boardY >= 0 && Boolean(this.board[boardY][boardX]));
@@ -214,11 +214,11 @@ class TetrisScene extends Phaser.Scene {
       this.drawGrid(1, 0xffffff, 0.24);
     }
     this.board.forEach((row, y) => row.forEach((cell, x) => this.drawCell(cell, x, y)));
-    if (!this.ended) this.piece.forEach((row, y) => row.forEach((cell, x) => this.drawCell(cell, this.pieceX + x, this.pieceY + y)));
+    if (!this.ended) {this.piece.forEach((row, y) => row.forEach((cell, x) => this.drawCell(cell, this.pieceX + x, this.pieceY + y)));}
   }
 
   private drawCell(cell: Cell, x: number, y: number): void {
-    if (!cell || y < 0) return;
+    if (!cell || y < 0) {return;}
     const px = 11 + x * BLOCK;
     const py = 5 + y * BLOCK;
     this.graphics.fillStyle(COLORS[cell], 1).fillRoundedRect(px, py, BLOCK - 2, BLOCK - 2, 4);
@@ -227,8 +227,8 @@ class TetrisScene extends Phaser.Scene {
 
   private drawGrid(width: number, color: number, alpha: number): void {
     this.graphics.lineStyle(width, color, alpha);
-    for (let x = 0; x <= COLS; x++) this.graphics.lineBetween(10 + x * BLOCK, 4, 10 + x * BLOCK, 4 + ROWS * BLOCK);
-    for (let y = 0; y <= ROWS; y++) this.graphics.lineBetween(10, 4 + y * BLOCK, 10 + COLS * BLOCK, 4 + y * BLOCK);
+    for (let x = 0; x <= COLS; x++) {this.graphics.lineBetween(10 + x * BLOCK, 4, 10 + x * BLOCK, 4 + ROWS * BLOCK);}
+    for (let y = 0; y <= ROWS; y++) {this.graphics.lineBetween(10, 4 + y * BLOCK, 10 + COLS * BLOCK, 4 + y * BLOCK);}
   }
 
   private updateLabels(): void { this.scoreText.setText(`${this.translate('score')}  ${this.score}     ${this.translate('lines')}  ${this.lines}`); }
@@ -269,13 +269,13 @@ export class TetrisGame implements AfterViewInit, OnDestroy {
   }
 
   control(action: 'left' | 'right' | 'rotate' | 'down' | 'drop' | 'pause' | 'restart'): void {
-    if (action === 'left') this.scene?.move(-1);
-    if (action === 'right') this.scene?.move(1);
-    if (action === 'rotate') this.scene?.rotate();
-    if (action === 'down') this.scene?.softDrop();
-    if (action === 'drop') this.scene?.hardDrop();
-    if (action === 'pause') this.scene?.togglePause();
-    if (action === 'restart') this.scene?.restart();
+    if (action === 'left') {this.scene?.move(-1);}
+    if (action === 'right') {this.scene?.move(1);}
+    if (action === 'rotate') {this.scene?.rotate();}
+    if (action === 'down') {this.scene?.softDrop();}
+    if (action === 'drop') {this.scene?.hardDrop();}
+    if (action === 'pause') {this.scene?.togglePause();}
+    if (action === 'restart') {this.scene?.restart();}
   }
 
   setSpeed(speed: GameSpeed): void {
@@ -296,7 +296,7 @@ export class TetrisGame implements AfterViewInit, OnDestroy {
   }
 
   @HostListener('document:visibilitychange')
-  protected pauseWhenHidden(): void { if (document.hidden) this.scene?.pauseIfRunning(); }
+  protected pauseWhenHidden(): void { if (document.hidden) {this.scene?.pauseIfRunning();} }
 
   ngOnDestroy(): void { this.audio.stop(); this.game?.destroy(true); }
 }

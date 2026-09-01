@@ -48,7 +48,7 @@ test.describe('Home page', () => {
       }).toBeLessThan(page.viewportSize()!.height);
       expect((await activeGame.boundingBox())!.y).toBeGreaterThanOrEqual(-1);
 
-      if (game.activeId !== '#active-chiyo') await page.keyboard.press('P');
+      if (game.activeId !== '#active-chiyo') {await page.keyboard.press('P');}
       await expect(page).toHaveScreenshot(['pages', 'home', 'game-navigation', game.snapshot], {
         animations: 'disabled',
         caret: 'hide',
@@ -75,6 +75,19 @@ test.describe('Home page', () => {
     await card.getByRole('button').click();
     await expect.poll(() => firstCanvas!.evaluate(canvas => canvas.isConnected)).toBe(false);
     await expect(page.locator('#active-game canvas')).toBeVisible();
+  });
+
+  test('closing a game returns to its card', async ({ page }) => {
+    const card = page.locator('#game-card-tetris');
+    await card.getByRole('button', { name: /Graj|Play|プレイ/ }).click();
+    await expect(page.locator('#active-game canvas')).toBeVisible();
+
+    await page.locator('#active-game').getByRole('button', { name: /Wróć do gier|Back to games|ゲーム一覧へ/ }).click();
+    await expect(page.locator('#active-game')).toHaveCount(0);
+    await expect.poll(async () => {
+      const box = await card.boundingBox();
+      return box ? box.y >= 0 && box.y + box.height <= page.viewportSize()!.height : false;
+    }).toBe(true);
   });
 
   test('visual scroll journey matches the approved snapshots', async ({ page }) => {
