@@ -31,13 +31,14 @@ class TetrisScene extends Phaser.Scene {
   private dropAt = 0;
   private baseDropDelay = 650;
   private speed: GameSpeed = 1;
+  private gridVisible = true;
   private ended = false;
   private paused = false;
   private graphics!: Phaser.GameObjects.Graphics;
   private scoreText!: Phaser.GameObjects.Text;
   private statusText!: Phaser.GameObjects.Text;
 
-  constructor(private readonly translate: (key: TranslationKey) => string, private readonly pauseChanged: (paused: boolean) => void, private readonly playSound: (effect: GameSoundEffect) => void) { super('tetris'); }
+  constructor(private readonly translate: (key: TranslationKey) => string, private readonly pauseChanged: (paused: boolean) => void, private readonly playSound: (effect: GameSoundEffect) => void, gridVisible: boolean) { super('tetris'); this.gridVisible = gridVisible; }
 
   preload(): void {
     this.load.image('tetris-background', 'assets/games/chiyo-tetris.jpg');
@@ -148,6 +149,8 @@ class TetrisScene extends Phaser.Scene {
     this.dropAt = this.time.now + this.baseDropDelay / this.speed;
   }
 
+  setGridVisible(visible: boolean): void { this.gridVisible = visible; this.draw(); }
+
   private stepDown(): boolean {
     if (!this.collides(this.piece, this.pieceX, this.pieceY + 1)) {
       this.pieceY++;
@@ -204,11 +207,12 @@ class TetrisScene extends Phaser.Scene {
 
   private draw(): void {
     this.graphics.clear();
-    this.graphics.fillStyle(0x090e1b, 0.72).fillRect(10, 4, COLS * BLOCK, ROWS * BLOCK);
+    this.graphics.fillStyle(0x07111f, 0.08).fillRect(10, 4, COLS * BLOCK, ROWS * BLOCK);
     this.graphics.fillStyle(0x090e1b, 0.88).fillRect(0, 564, 300, 36);
-    this.graphics.lineStyle(1, 0xffffff, 0.16);
-    for (let x = 0; x <= COLS; x++) this.graphics.lineBetween(10 + x * BLOCK, 4, 10 + x * BLOCK, 4 + ROWS * BLOCK);
-    for (let y = 0; y <= ROWS; y++) this.graphics.lineBetween(10, 4 + y * BLOCK, 10 + COLS * BLOCK, 4 + y * BLOCK);
+    if (this.gridVisible) {
+      this.drawGrid(2, 0x020617, 0.42);
+      this.drawGrid(1, 0xffffff, 0.24);
+    }
     this.board.forEach((row, y) => row.forEach((cell, x) => this.drawCell(cell, x, y)));
     if (!this.ended) this.piece.forEach((row, y) => row.forEach((cell, x) => this.drawCell(cell, this.pieceX + x, this.pieceY + y)));
   }
@@ -219,6 +223,12 @@ class TetrisScene extends Phaser.Scene {
     const py = 5 + y * BLOCK;
     this.graphics.fillStyle(COLORS[cell], 1).fillRoundedRect(px, py, BLOCK - 2, BLOCK - 2, 4);
     this.graphics.fillStyle(0xffffff, 0.18).fillRoundedRect(px + 3, py + 3, BLOCK - 8, 5, 2);
+  }
+
+  private drawGrid(width: number, color: number, alpha: number): void {
+    this.graphics.lineStyle(width, color, alpha);
+    for (let x = 0; x <= COLS; x++) this.graphics.lineBetween(10 + x * BLOCK, 4, 10 + x * BLOCK, 4 + ROWS * BLOCK);
+    for (let y = 0; y <= ROWS; y++) this.graphics.lineBetween(10, 4 + y * BLOCK, 10 + COLS * BLOCK, 4 + y * BLOCK);
   }
 
   private updateLabels(): void { this.scoreText.setText(`${this.translate('score')}  ${this.score}     ${this.translate('lines')}  ${this.lines}`); }
@@ -238,13 +248,14 @@ export class TetrisGame implements AfterViewInit, OnDestroy {
   protected readonly audio = inject(GameAudioService);
   protected readonly paused = signal(false);
   protected readonly speed = signal<GameSpeed>(1);
+  protected readonly gridVisible = signal(this.readGridPreference());
   protected readonly speedOptions: readonly GameSpeed[] = [0.75, 1, 1.5];
   private game?: Phaser.Game;
   private scene?: TetrisScene;
 
   ngAfterViewInit(): void {
     this.audio.start('tetris');
-    this.scene = new TetrisScene(key => this.i18n.t(key), paused => this.paused.set(paused), effect => this.audio.playEffect(effect));
+    this.scene = new TetrisScene(key => this.i18n.t(key), paused => this.paused.set(paused), effect => this.audio.playEffect(effect), this.gridVisible());
     this.game = new Phaser.Game({
       type: Phaser.AUTO,
       parent: this.gameHost.nativeElement,
@@ -273,6 +284,16 @@ export class TetrisGame implements AfterViewInit, OnDestroy {
   }
 
   toggleAudio(): void { this.audio.toggle('tetris'); }
+
+  toggleGrid(): void {
+    this.gridVisible.update(visible => !visible);
+    try { localStorage.setItem('tetris-grid-visible', String(this.gridVisible())); } catch { /* Storage may be unavailable. */ }
+    this.scene?.setGridVisible(this.gridVisible());
+  }
+
+  private readGridPreference(): boolean {
+    try { return localStorage.getItem('tetris-grid-visible') !== 'false'; } catch { return true; }
+  }
 
   @HostListener('document:visibilitychange')
   protected pauseWhenHidden(): void { if (document.hidden) this.scene?.pauseIfRunning(); }
