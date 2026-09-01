@@ -66,6 +66,17 @@ test.describe('Home page', () => {
     expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth);
   });
 
+  test('reopening the same game recreates a stale scene', async ({ page }) => {
+    const card = page.locator('.game-card').filter({ hasText: 'Blocks with Chiyo' });
+    await card.getByRole('button').click();
+    const firstCanvas = await page.locator('#active-game canvas').elementHandle();
+    expect(firstCanvas).not.toBeNull();
+
+    await card.getByRole('button').click();
+    await expect.poll(() => firstCanvas!.evaluate(canvas => canvas.isConnected)).toBe(false);
+    await expect(page.locator('#active-game canvas')).toBeVisible();
+  });
+
   test('visual scroll journey matches the approved snapshots', async ({ page }) => {
     await page.evaluate(() => window.scrollTo(0, 0));
     await expect(page).toHaveScreenshot(['pages', 'home', 'steps', '01-hero.png'], {
