@@ -7,6 +7,9 @@
     "start": "ng serve",
     "build": "ng build",
     "test": "ng test --watch=false",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:update-snapshots": "playwright test --update-snapshots -g \"visual\" --project=desktop-chromium --project=desktop-firefox --project=desktop-webkit --project=small-android --project=large-android --project=mobile-safari",
     "watch": "ng build --watch --configuration development"
   },
   "dependencies": {
@@ -22,6 +25,7 @@
     "@angular/build": "^22.1.0",
     "@angular/cli": "^22.1.0",
     "@angular/compiler-cli": "^22.1.0",
+    "@playwright/test": "^1.62.1",
     "jsdom": "^30.0.1",
     "typescript": "~6.0.0",
     "vitest": "^4.1.11"

@@ -2,6 +2,11 @@
 /node_modules
 /dist
 /.angular
+/playwright-report
+/test-results
+/blob-report
+/playwright/.cache
+/debug.log
 
 # Editors and OS files
 .idea/
