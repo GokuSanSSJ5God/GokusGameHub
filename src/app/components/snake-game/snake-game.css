@@ -15,7 +15,7 @@
   .touch-controls { position: absolute; inset: 0; display: block; margin: 0; pointer-events: none; }
   .touch-controls button { position: absolute; box-sizing: border-box; width: 48px; height: 48px; min-height: 48px; padding: 0; border-color: #ffffff38; background: #0b1a14b8; opacity: .48; pointer-events: auto; backdrop-filter: blur(5px); }
   .touch-controls button:active { opacity: .95; }
-  .touch-controls .up { left: 50%; bottom: 86px; transform: translateX(-50%); }
+  .touch-controls .up { left: 50%; bottom: 74px; transform: translateX(-50%); }
   .touch-controls .left { left: calc(50% - 80px); bottom: 18px; }
   .touch-controls .down { left: 50%; bottom: 18px; transform: translateX(-50%); }
   .touch-controls .right { left: calc(50% + 32px); bottom: 18px; }
