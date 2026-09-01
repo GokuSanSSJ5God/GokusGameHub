@@ -17,6 +17,9 @@ export class ChiyoEngine {
   ended = false;
   started = false;
   paused = false;
+  private obstacleProfile: number[] = [];
+  private obstacleFromTop = false;
+  private obstacleHeight = 0;
 
   constructor(private readonly random: () => number = Math.random) { this.restart(); }
 
@@ -26,6 +29,7 @@ export class ChiyoEngine {
   restart(): void {
     this.birdY = 250; this.velocityY = 0; this.distance = 0; this.itemScore = 0;
     this.speed = 190; this.ended = false; this.started = false; this.paused = false;
+    this.obstacleProfile = []; this.obstacleFromTop = false; this.obstacleHeight = 0;
     this.terrain = [];
     for (let x = 0; x <= CHIYO_WIDTH + CHIYO_SLICE_WIDTH * 2; x += CHIYO_SLICE_WIDTH) {
       this.terrain.push(this.createSlice(x, this.terrain.length));
@@ -77,10 +81,27 @@ export class ChiyoEngine {
   private createSlice(x: number, index: number): ChiyoTerrainSlice {
     if (this.distance === 0 && index < 11) return { x, top: 55, bottom: 55 };
     const wave = Math.sin(index * 0.42) * 55 + Math.sin(index * 0.13) * 30;
-    const difficulty = Math.min(45, this.distance / 500);
-    const gap = 245 - difficulty;
+    const difficulty = Math.min(35, this.distance / 700);
+    const gap = 280 - difficulty;
     const center = CHIYO_HEIGHT / 2 + wave;
-    return { x, top: Math.max(35, Math.min(205, center - gap / 2)), bottom: Math.max(35, Math.min(205, CHIYO_HEIGHT - (center + gap / 2))) };
+    let top = Math.max(35, Math.min(205, center - gap / 2));
+    let bottom = Math.max(35, Math.min(205, CHIYO_HEIGHT - (center + gap / 2)));
+
+    // Occasionally grow a short, rounded terrain bump after the safe opening.
+    // Three slices form a readable 55% → 100% → 55% obstacle profile.
+    if (this.distance > 550 && this.obstacleProfile.length === 0 && this.random() < 0.045) {
+      this.obstacleProfile = [0.55, 1, 0.55];
+      this.obstacleFromTop = this.random() < 0.5;
+      this.obstacleHeight = 20 + this.random() * 12;
+    }
+    const obstacleScale = this.obstacleProfile.shift();
+    if (obstacleScale !== undefined) {
+      const bump = this.obstacleHeight * obstacleScale;
+      if (this.obstacleFromTop) top = Math.min(225, top + bump);
+      else bottom = Math.min(225, bottom + bump);
+    }
+
+    return { x, top, bottom };
   }
 
   private checkCollisions(): void {
