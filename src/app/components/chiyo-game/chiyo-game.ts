@@ -260,7 +260,7 @@ class ChiyoScene extends Phaser.Scene {
   }
 }
 
-@Component({ selector: 'app-chiyo-game', templateUrl: './chiyo-game.html', styleUrls: ['./chiyo-game.css', '../game-audio.css'], changeDetection: ChangeDetectionStrategy.OnPush })
+@Component({ selector: 'app-chiyo-game', templateUrl: './chiyo-game.html', styleUrls: ['./chiyo-game.css', '../game-audio.css', '../game-window-actions.css'], changeDetection: ChangeDetectionStrategy.OnPush })
 export class ChiyoGame implements AfterViewInit, OnDestroy {
   readonly closed = output<void>(); readonly ready = output<void>();
   protected readonly paused = signal(false);

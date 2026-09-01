@@ -18,27 +18,35 @@ for (const game of games) {
 
     const sectionBox = await activeGame.locator(game.section).boundingBox();
     const controlsBox = await activeGame.locator('.touch-controls').boundingBox();
-    const actions = activeGame.locator('.mobile-game-actions');
-    const actionsBox = await actions.boundingBox();
+    const closeButton = activeGame.getByRole('button', { name: /Wróć do gier|Back to games|ゲーム一覧へ/ });
+    const restartButton = activeGame.getByRole('button', { name: /Nowa gra|New game|新しいゲーム/ });
+    const closeBox = await closeButton.boundingBox();
+    const restartBox = await restartButton.boundingBox();
     expect(sectionBox).not.toBeNull();
     expect(controlsBox).not.toBeNull();
-    expect(actionsBox).not.toBeNull();
+    expect(closeBox).not.toBeNull();
+    expect(restartBox).not.toBeNull();
     expect(controlsBox!.x).toBeGreaterThanOrEqual(sectionBox!.x);
     expect(controlsBox!.x + controlsBox!.width).toBeLessThanOrEqual(sectionBox!.x + sectionBox!.width + 1);
-    expect(actionsBox!.x).toBeGreaterThanOrEqual(sectionBox!.x);
-    expect(actionsBox!.x + actionsBox!.width).toBeLessThanOrEqual(sectionBox!.x + sectionBox!.width + 1);
-    await expect(actions.getByRole('button', { name: /Nowa gra|New game|新しいゲーム/ })).toBeVisible();
-    await expect(actions.getByRole('button', { name: /Wróć do gier|Back to games|ゲーム一覧へ/ })).toBeVisible();
+    expect(closeBox!.x).toBeGreaterThanOrEqual(sectionBox!.x);
+    expect(closeBox!.x + closeBox!.width).toBeLessThanOrEqual(sectionBox!.x + sectionBox!.width + 1);
+    expect(restartBox!.x).toBeGreaterThanOrEqual(sectionBox!.x);
+    expect(restartBox!.x + restartBox!.width).toBeLessThanOrEqual(sectionBox!.x + sectionBox!.width + 1);
+    await expect(closeButton).toBeVisible();
+    await expect(restartButton).toBeVisible();
 
     if (game.activeId === '#active-snake') {
       const directionButtons = await activeGame.locator('.touch-controls button:not(.pause)').all();
-      const boxes = await Promise.all(directionButtons.map(button => button.boundingBox()));
+      const boxes = await Promise.all(directionButtons.map(async button => ({
+        label: await button.getAttribute('aria-label'),
+        box: await button.boundingBox(),
+      })));
       for (let first = 0; first < boxes.length; first++) {
         for (let second = first + 1; second < boxes.length; second++) {
-          const a = boxes[first]!;
-          const b = boxes[second]!;
+          const a = boxes[first]!.box!;
+          const b = boxes[second]!.box!;
           const overlaps = a.x < b.x + b.width && a.x + a.width > b.x && a.y < b.y + b.height && a.y + a.height > b.y;
-          expect(overlaps).toBe(false);
+          expect(overlaps, `${boxes[first]!.label} overlaps ${boxes[second]!.label}`).toBe(false);
         }
       }
     }

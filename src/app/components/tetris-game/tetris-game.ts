@@ -237,7 +237,7 @@ class TetrisScene extends Phaser.Scene {
 @Component({
   selector: 'app-tetris-game',
   templateUrl: './tetris-game.html',
-  styleUrls: ['./tetris-game.css', './tetris-mobile-controls.css'],
+  styleUrls: ['./tetris-game.css', './tetris-mobile-controls.css', '../game-window-actions.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TetrisGame implements AfterViewInit, OnDestroy {
