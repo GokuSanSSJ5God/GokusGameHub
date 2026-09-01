@@ -1,8 +1,24 @@
 @media (max-width: 760px), (pointer: coarse) {
-  .game-stage { width: min(300px, 62.5vw); }
+  .game-stage { width: min(300px, 62.5vw); margin-bottom: 68px; }
+  .game-host { border-radius: 12px 12px 0 0; }
+  .tetris-section .restart-toggle { top: 158px; right: 10px; }
+
+  .touch-controls::before {
+    content: '';
+    position: absolute;
+    top: calc(100% - 1px);
+    right: 0;
+    left: 0;
+    height: 62px;
+    border: 1px solid #8b5cf650;
+    border-radius: 0 0 12px 12px;
+    background: #090e1bf7;
+    box-shadow: 0 10px 24px #0008, 0 0 20px #7c3aed18;
+    pointer-events: none;
+  }
 
   .move-controls,
-  .action-controls { bottom: 48px; }
+  .action-controls { top: calc(100% + 7px); bottom: auto; }
 
   .move-controls { left: 20px; width: 52%; }
   .action-controls { right: 20px; width: 29%; }

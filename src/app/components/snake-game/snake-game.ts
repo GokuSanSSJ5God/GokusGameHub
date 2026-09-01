@@ -96,7 +96,7 @@ class SnakeScene extends Phaser.Scene {
   private updateScore(): void { this.scoreText.setText(`${this.translate('score')}  ${this.score}\n${this.translate('length')}  ${this.snake.length}`); }
 }
 
-@Component({ selector: 'app-snake-game', templateUrl: './snake-game.html', styleUrls: ['./snake-game.css', '../game-audio.css'], changeDetection: ChangeDetectionStrategy.OnPush })
+@Component({ selector: 'app-snake-game', templateUrl: './snake-game.html', styleUrls: ['./snake-game.css', '../game-audio.css', '../game-window-actions.css'], changeDetection: ChangeDetectionStrategy.OnPush })
 export class SnakeGame implements AfterViewInit, OnDestroy {
   readonly closed = output<void>(); readonly ready = output<void>();
   @ViewChild('gameHost', { static: true }) private gameHost!: ElementRef<HTMLDivElement>;

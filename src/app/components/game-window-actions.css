@@ -1,0 +1,28 @@
+.tetris-section,
+.snake-section,
+.chiyo-section { position: relative; }
+
+.section-close,
+.restart-toggle {
+  z-index: 5;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  border: 1px solid #ffffff28;
+  border-radius: 10px;
+  background: #08111cf2;
+  color: #cbd5e1;
+  font-size: 19px;
+  font-weight: 800;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.section-close { position: absolute; top: 16px; right: 16px; }
+.restart-toggle { position: absolute; top: 142px; right: 10px; }
+.section-close:hover,
+.restart-toggle:hover { border-color: #a78bfa80; background: #7c3aed; color: white; }
+.section-close:focus-visible,
+.restart-toggle:focus-visible { outline: 2px solid white; outline-offset: 2px; }
