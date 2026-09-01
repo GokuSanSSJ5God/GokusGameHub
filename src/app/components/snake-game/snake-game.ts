@@ -1,5 +1,6 @@
 import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnDestroy, ViewChild, inject, output, signal } from '@angular/core';
 import Phaser from 'phaser';
+import { GameAudioService, GameSoundEffect } from '../../services/game-audio.service';
 import { I18nService, TranslationKey } from '../../services/i18n.service';
 
 interface Point { x: number; y: number; }
@@ -20,7 +21,7 @@ class SnakeScene extends Phaser.Scene {
   private ended = false;
   private paused = false;
 
-  constructor(private readonly translate: (key: TranslationKey) => string, private readonly pauseChanged: (paused: boolean) => void) { super('snake'); }
+  constructor(private readonly translate: (key: TranslationKey) => string, private readonly pauseChanged: (paused: boolean) => void, private readonly playSound: (effect: GameSoundEffect) => void) { super('snake'); }
 
   create(): void {
     this.graphics = this.add.graphics();
@@ -45,7 +46,7 @@ class SnakeScene extends Phaser.Scene {
     if (this.ended || this.paused) return;
     const directions = { left: { x: -1, y: 0 }, right: { x: 1, y: 0 }, up: { x: 0, y: -1 }, down: { x: 0, y: 1 } };
     const candidate = directions[target];
-    if (candidate.x !== -this.direction.x || candidate.y !== -this.direction.y) this.queuedDirection = candidate;
+    if (candidate.x !== -this.direction.x || candidate.y !== -this.direction.y) { this.queuedDirection = candidate; this.playSound('turn'); }
   }
 
   restart(): void {
@@ -70,9 +71,10 @@ class SnakeScene extends Phaser.Scene {
     const next = { x: this.snake[0].x + this.direction.x, y: this.snake[0].y + this.direction.y };
     const hitWall = next.x < 0 || next.x >= GRID || next.y < 0 || next.y >= GRID;
     const hitSelf = this.snake.some(segment => segment.x === next.x && segment.y === next.y);
-    if (hitWall || hitSelf) { this.ended = true; this.statusText.setText(`${this.translate('gameOver')}\nR / SPACE — ${this.translate('restart')}`); return; }
+    if (hitWall || hitSelf) { this.ended = true; this.playSound('gameOver'); this.statusText.setText(`${this.translate('gameOver')}\nR / SPACE — ${this.translate('restart')}`); return; }
     this.snake.unshift(next);
     if (next.x === this.food.x && next.y === this.food.y) {
+      this.playSound('score');
       this.score += 10; this.moveDelay = Math.max(65, this.moveDelay - 3); this.placeFood(); this.updateScore();
     } else this.snake.pop();
     this.draw();
@@ -94,20 +96,23 @@ class SnakeScene extends Phaser.Scene {
   private updateScore(): void { this.scoreText.setText(`${this.translate('score')}  ${this.score}\n${this.translate('length')}  ${this.snake.length}`); }
 }
 
-@Component({ selector: 'app-snake-game', templateUrl: './snake-game.html', styleUrl: './snake-game.css', changeDetection: ChangeDetectionStrategy.OnPush })
+@Component({ selector: 'app-snake-game', templateUrl: './snake-game.html', styleUrls: ['./snake-game.css', '../game-audio.css'], changeDetection: ChangeDetectionStrategy.OnPush })
 export class SnakeGame implements AfterViewInit, OnDestroy {
   readonly closed = output<void>(); readonly ready = output<void>();
   @ViewChild('gameHost', { static: true }) private gameHost!: ElementRef<HTMLDivElement>;
   protected readonly i18n = inject(I18nService);
+  protected readonly audio = inject(GameAudioService);
   protected readonly paused = signal(false);
   private game?: Phaser.Game; private scene?: SnakeScene;
   ngAfterViewInit(): void {
-    this.scene = new SnakeScene(key => this.i18n.t(key), paused => this.paused.set(paused));
+    this.audio.start('snake');
+    this.scene = new SnakeScene(key => this.i18n.t(key), paused => this.paused.set(paused), effect => this.audio.playEffect(effect));
     this.game = new Phaser.Game({ type: Phaser.AUTO, parent: this.gameHost.nativeElement, width: 400, height: 450, backgroundColor: '#07130e', scene: this.scene, scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH } });
     requestAnimationFrame(() => this.ready.emit());
   }
   control(action: 'left' | 'right' | 'up' | 'down' | 'pause' | 'restart'): void { if (action === 'restart') this.scene?.restart(); else if (action === 'pause') this.scene?.togglePause(); else this.scene?.turn(action); }
+  toggleAudio(): void { this.audio.toggle('snake'); }
   @HostListener('document:visibilitychange')
   protected pauseWhenHidden(): void { if (document.hidden) this.scene?.pauseIfRunning(); }
-  ngOnDestroy(): void { this.game?.destroy(true); }
+  ngOnDestroy(): void { this.audio.stop(); this.game?.destroy(true); }
 }
