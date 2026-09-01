@@ -10,6 +10,7 @@
     <div class="game-stage">
       <div #gameHost class="game-host" aria-label="Gra Tetris"></div>
       <button class="audio-toggle" type="button" (click)="toggleAudio()" [attr.aria-label]="i18n.t(audio.enabled() ? 'musicOff' : 'musicOn')" [attr.aria-pressed]="audio.enabled()">{{ audio.enabled() ? '🔊' : '🔇' }}</button>
+      <button class="grid-toggle" type="button" (click)="toggleGrid()" [attr.aria-label]="i18n.t(gridVisible() ? 'gridOff' : 'gridOn')" [attr.aria-pressed]="gridVisible()">▦</button>
       <div class="speed-controls" role="group" [attr.aria-label]="i18n.t('speed')">
         @for (option of speedOptions; track option) {
           <button type="button" [class.active]="speed() === option" [attr.aria-pressed]="speed() === option" (click)="setSpeed(option)">{{ option }}×</button>

@@ -8,7 +8,10 @@
   .action-controls { right: 20px; width: 29%; }
 
   .speed-controls,
-  .audio-toggle { background: #090e1bf5; backdrop-filter: none; }
+  .audio-toggle,
+  .grid-toggle { background: #090e1bf5; backdrop-filter: none; }
+
+  .grid-toggle { top: 110px; right: 10px; }
 
   .touch-controls button {
     min-height: 46px;
