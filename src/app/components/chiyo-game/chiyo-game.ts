@@ -11,6 +11,8 @@ const WIDTH = 900;
 const HEIGHT = 500;
 const BIRD_X = 170;
 const SLICE_WIDTH = 45;
+const TERRAIN_LEVEL_COLORS = [0x14532d, 0x155e3a, 0x0f766e, 0x0d9488, 0x4d7c0f, 0x854d0e, 0x9a3412, 0xc2410c, 0xb91c1c, 0x7f1d1d];
+const EDGE_LEVEL_COLORS = [0x22c55e, 0x34d399, 0x2dd4bf, 0x5eead4, 0xa3e635, 0xfacc15, 0xfb923c, 0xf97316, 0xef4444, 0xf87171];
 
 class ChiyoScene extends Phaser.Scene {
   private readonly engine = new ChiyoEngine();
@@ -158,18 +160,20 @@ class ChiyoScene extends Phaser.Scene {
     const shieldStatus = this.engine.invincible ? `     ${this.translate('shield')}  ${Math.ceil(this.engine.invincibilityRemaining)} s` : '';
     const speedStatus = this.engine.speedBoosted ? `     ${this.translate('speedUp')}  ${Math.ceil(this.engine.speedBoostRemaining)} s` : '';
     const glideStatus = this.engine.gliding ? `     ${this.translate('glide')}  ${Math.ceil(this.engine.glideRemaining)} s` : '';
-    this.scoreText.setText(`${this.translate('score')}  ${this.engine.score}     ${this.translate('distance')}  ${Math.floor(this.engine.distance / 10)} m     ${this.translate('items')}  ${this.engine.collectedItems}${shieldStatus}${speedStatus}${glideStatus}`);
+    this.scoreText.setText(`${this.translate('score')}  ${this.engine.score}     ${this.translate('distance')}  ${Math.floor(this.engine.distance / 10)} m     ${this.translate('level')}  ${this.engine.level}     ${this.translate('items')}  ${this.engine.collectedItems}${shieldStatus}${speedStatus}${glideStatus}`);
   }
 
   private draw(): void {
     this.graphics.clear();
     this.graphics.fillGradientStyle(0x071b33, 0x071b33, 0x164e63, 0x164e63, 1).fillRect(0, 0, WIDTH, HEIGHT);
     this.drawClouds();
+    const terrainColor = this.interpolateLevelColor(TERRAIN_LEVEL_COLORS);
+    const edgeColor = this.interpolateLevelColor(EDGE_LEVEL_COLORS);
     this.engine.terrain.forEach(slice => {
-      this.graphics.fillStyle(0x14532d, 1).fillRect(slice.x, 0, SLICE_WIDTH + 1, slice.top);
-      this.graphics.fillStyle(0x22c55e, 1).fillRect(slice.x, slice.top - 5, SLICE_WIDTH + 1, 7);
-      this.graphics.fillStyle(0x14532d, 1).fillRect(slice.x, HEIGHT - slice.bottom, SLICE_WIDTH + 1, slice.bottom);
-      this.graphics.fillStyle(0x22c55e, 1).fillRect(slice.x, HEIGHT - slice.bottom, SLICE_WIDTH + 1, 7);
+      this.graphics.fillStyle(terrainColor, 1).fillRect(slice.x, 0, SLICE_WIDTH + 1, slice.top);
+      this.graphics.fillStyle(edgeColor, 1).fillRect(slice.x, slice.top - 5, SLICE_WIDTH + 1, 7);
+      this.graphics.fillStyle(terrainColor, 1).fillRect(slice.x, HEIGHT - slice.bottom, SLICE_WIDTH + 1, slice.bottom);
+      this.graphics.fillStyle(edgeColor, 1).fillRect(slice.x, HEIGHT - slice.bottom, SLICE_WIDTH + 1, 7);
     });
     this.engine.items.forEach(item => {
       if (!item.collected) {
@@ -180,6 +184,16 @@ class ChiyoScene extends Phaser.Scene {
       }
     });
     this.drawBird();
+  }
+
+  private interpolateLevelColor(colors: readonly number[]): number {
+    const startIndex = this.engine.level - 1;
+    const endIndex = Math.min(colors.length - 1, startIndex + 1);
+    const progress = this.engine.level === 10 ? 0 : (this.engine.flightTime % 30) / 30;
+    const start = colors[startIndex];
+    const end = colors[endIndex];
+    const channel = (shift: number): number => Math.round(((start >> shift) & 0xff) + (((end >> shift) & 0xff) - ((start >> shift) & 0xff)) * progress);
+    return (channel(16) << 16) | (channel(8) << 8) | channel(0);
   }
 
   private drawClouds(): void {

@@ -32,6 +32,17 @@ describe('ChiyoEngine', () => {
     expect(game.score).toBeGreaterThan(0);
   });
 
+  it('increases level every 30 seconds of active flight', () => {
+    const game = new ChiyoEngine(() => 0.9);
+    expect(game.level).toBe(1);
+    game.flightTime = 29.99;
+    expect(game.level).toBe(1);
+    game.flightTime = 30;
+    expect(game.level).toBe(2);
+    game.flightTime = 270;
+    expect(game.level).toBe(10);
+  });
+
   it('awards 100 bonus points for collecting an item', () => {
     const game = new ChiyoEngine(() => 0.9);
     game.items.push({ x: CHIYO_BIRD_X, y: game.birdY, collected: false, type: 'seed' });
@@ -131,9 +142,9 @@ describe('ChiyoEngine', () => {
   it('stops physics, distance and scoring while paused', () => {
     const game = new ChiyoEngine(() => 0.9);
     game.flap(); game.step(0.02); game.togglePause();
-    const snapshot = { birdY: game.birdY, distance: game.distance, score: game.score };
+    const snapshot = { birdY: game.birdY, distance: game.distance, flightTime: game.flightTime, score: game.score };
     game.step(1);
-    expect({ birdY: game.birdY, distance: game.distance, score: game.score }).toEqual(snapshot);
+    expect({ birdY: game.birdY, distance: game.distance, flightTime: game.flightTime, score: game.score }).toEqual(snapshot);
     expect(game.paused).toBe(true);
   });
 });

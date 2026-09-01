@@ -16,6 +16,7 @@ export class ChiyoEngine {
   birdY = 250;
   velocityY = 0;
   distance = 0;
+  flightTime = 0;
   itemScore = 0;
   speed = 190;
   ended = false;
@@ -35,9 +36,10 @@ export class ChiyoEngine {
   get invincible(): boolean { return this.invincibilityRemaining > 0; }
   get speedBoosted(): boolean { return this.speedBoostRemaining > 0; }
   get gliding(): boolean { return this.glideRemaining > 0; }
+  get level(): number { return Math.min(10, 1 + Math.floor(this.flightTime / 30)); }
 
   restart(): void {
-    this.birdY = 250; this.velocityY = 0; this.distance = 0; this.itemScore = 0;
+    this.birdY = 250; this.velocityY = 0; this.distance = 0; this.flightTime = 0; this.itemScore = 0;
     this.speed = 190; this.ended = false; this.started = false; this.paused = false;
     this.invincibilityRemaining = 0;
     this.speedBoostRemaining = 0;
@@ -60,6 +62,7 @@ export class ChiyoEngine {
   step(delta: number): void {
     if (!this.started || this.ended || this.paused || delta <= 0) {return;}
     const safeDelta = Math.min(delta, 0.035);
+    this.flightTime += safeDelta;
     this.invincibilityRemaining = Math.max(0, this.invincibilityRemaining - safeDelta);
     this.speedBoostRemaining = Math.max(0, this.speedBoostRemaining - safeDelta);
     this.glideRemaining = Math.max(0, this.glideRemaining - safeDelta);
@@ -70,7 +73,7 @@ export class ChiyoEngine {
       this.birdY += this.velocityY * safeDelta;
     }
     this.distance += this.speed * safeDelta;
-    const baseSpeed = Math.min(280, 190 + this.distance / 90);
+    const baseSpeed = 190 + (this.level - 1) * 10;
     this.speed = baseSpeed * (this.speedBoosted ? CHIYO_SPEED_BOOST_MULTIPLIER : 1);
     this.moveWorld(this.speed * safeDelta);
     this.checkCollisions();
