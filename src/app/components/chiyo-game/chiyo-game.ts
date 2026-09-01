@@ -37,13 +37,24 @@ class ChiyoScene extends Phaser.Scene {
     this.hintText = this.add.text(WIDTH / 2, HEIGHT / 2, '', { align: 'center', color: '#ffffff', fontFamily: 'system-ui', fontSize: '26px', fontStyle: 'bold' }).setOrigin(0.5).setDepth(3);
     this.input.on('pointerdown', () => this.flap());
     const keyboard = this.input.keyboard;
-    keyboard?.addCapture([Phaser.Input.Keyboard.KeyCodes.SPACE, Phaser.Input.Keyboard.KeyCodes.UP]);
-    keyboard?.on('keydown-SPACE', () => this.flap());
-    keyboard?.on('keydown-UP', () => this.flap());
+    keyboard?.on('keydown-SPACE', (event: KeyboardEvent) => this.handleFlapKey(event));
+    keyboard?.on('keydown-UP', (event: KeyboardEvent) => this.preventGameplayScroll(event));
+    keyboard?.on('keydown-DOWN', (event: KeyboardEvent) => this.preventGameplayScroll(event));
+    keyboard?.on('keydown-LEFT', (event: KeyboardEvent) => this.preventGameplayScroll(event));
+    keyboard?.on('keydown-RIGHT', (event: KeyboardEvent) => this.preventGameplayScroll(event));
     keyboard?.on('keydown-R', () => this.restart());
     keyboard?.on('keydown-P', () => this.togglePause());
     keyboard?.on('keydown-ESC', () => this.togglePause());
     this.restart();
+  }
+
+  private handleFlapKey(event: KeyboardEvent): void {
+    event.preventDefault();
+    this.flap();
+  }
+
+  private preventGameplayScroll(event: KeyboardEvent): void {
+    if (this.engine.started && !this.engine.ended) event.preventDefault();
   }
 
   override update(time: number): void {
