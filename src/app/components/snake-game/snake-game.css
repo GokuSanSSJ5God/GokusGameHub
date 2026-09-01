@@ -6,8 +6,11 @@
 .game-host canvas { width: 100% !important; height: 100% !important; max-width: 100%; }
 .touch-controls { position: relative; z-index: 2; }
 .touch-controls button { touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+.touch-controls .pause { grid-column: 1 / -1; min-height: 44px; font-size: 14px; color: #86efac; }
 
-@media (max-width: 850px) {
+@media (max-width: 850px), (pointer: coarse) {
   .snake-section { max-width: calc(100vw - 24px); margin-inline: 12px; padding-inline: 12px; overflow: hidden; }
   .game-host { height: auto; }
+  .touch-controls { grid-template-columns: repeat(3, 64px); }
+  .touch-controls button { min-height: 56px; }
 }

@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild, inject, output } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnDestroy, ViewChild, inject, output, signal } from '@angular/core';
 import Phaser from 'phaser';
 import { CHIYO_BIRD_X, ChiyoEngine } from '../../games/chiyo/chiyo-engine';
 import { I18nService, TranslationKey } from '../../services/i18n.service';
@@ -28,7 +28,7 @@ class ChiyoScene extends Phaser.Scene {
   private started = false;
   private lastTime = 0;
 
-  constructor(private readonly translate: (key: TranslationKey) => string) { super('chiyo-flight'); }
+  constructor(private readonly translate: (key: TranslationKey) => string, private readonly pauseChanged: (paused: boolean) => void) { super('chiyo-flight'); }
 
   create(): void {
     this.graphics = this.add.graphics();
@@ -79,11 +79,17 @@ class ChiyoScene extends Phaser.Scene {
     this.pauseText.setText(`P / ESC — ${this.translate(paused ? 'resume' : 'pause')}`);
     if (paused) this.hintText.setText(this.translate('paused'));
     else if (this.engine.started && !this.engine.ended) this.hintText.setText('');
+    this.pauseChanged(paused);
     return paused;
+  }
+
+  pauseIfRunning(): void {
+    if (this.engine.started && !this.engine.ended && !this.engine.paused) this.togglePause();
   }
 
   restart(): void {
     this.engine.restart();
+    this.pauseChanged(false);
     this.pauseText.setText(`P / ESC — ${this.translate('pause')}`);
     this.lastTime = this.time.now;
     this.hintText.setText(`CLICK / SPACE\n${this.translate('flyChiyo')}`);
@@ -183,15 +189,19 @@ class ChiyoScene extends Phaser.Scene {
 @Component({ selector: 'app-chiyo-game', templateUrl: './chiyo-game.html', styleUrl: './chiyo-game.css', changeDetection: ChangeDetectionStrategy.OnPush })
 export class ChiyoGame implements AfterViewInit, OnDestroy {
   readonly closed = output<void>(); readonly ready = output<void>();
+  protected readonly paused = signal(false);
   protected readonly i18n = inject(I18nService);
   @ViewChild('gameHost', { static: true }) private gameHost!: ElementRef<HTMLDivElement>;
   private game?: Phaser.Game; private scene?: ChiyoScene;
   ngAfterViewInit(): void {
-    this.scene = new ChiyoScene(key => this.i18n.t(key));
+    this.scene = new ChiyoScene(key => this.i18n.t(key), paused => this.paused.set(paused));
     this.game = new Phaser.Game({ type: Phaser.AUTO, parent: this.gameHost.nativeElement, width: WIDTH, height: HEIGHT, backgroundColor: '#071b33', scene: this.scene, scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH } });
     requestAnimationFrame(() => this.ready.emit());
   }
   flap(): void { this.scene?.flap(); }
+  togglePause(): void { this.scene?.togglePause(); }
   restart(): void { this.scene?.restart(); }
+  @HostListener('document:visibilitychange')
+  protected pauseWhenHidden(): void { if (document.hidden) this.scene?.pauseIfRunning(); }
   ngOnDestroy(): void { this.game?.destroy(true); }
 }

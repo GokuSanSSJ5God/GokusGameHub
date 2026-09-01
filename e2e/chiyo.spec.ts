@@ -53,6 +53,17 @@ test.describe("Chiyo's Flight", () => {
     expect(canvas!.x + canvas!.width).toBeLessThanOrEqual(section!.x + section!.width + 1);
   });
 
+  test('mobile pause control pauses and resumes the game', async ({ page }, testInfo) => {
+    test.skip(!testInfo.project.use.hasTouch, 'Mobile controls are covered by touch projects.');
+    await openChiyo(page);
+
+    await page.getByRole('button', { name: /Wzleć|Flap|羽ばたく/ }).click();
+    await page.getByRole('button', { name: /Pauza|Pause|一時停止/ }).click();
+    await expect(page.getByRole('button', { name: /Wznów|Resume|再開/ })).toBeVisible();
+    await page.getByRole('button', { name: /Wznów|Resume|再開/ }).click();
+    await expect(page.getByRole('button', { name: /Pauza|Pause|一時停止/ })).toBeVisible();
+  });
+
   test('visual layout matches the approved snapshot', async ({ page }) => {
     await openChiyo(page);
 

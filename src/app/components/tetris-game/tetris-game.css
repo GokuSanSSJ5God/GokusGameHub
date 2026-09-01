@@ -10,8 +10,12 @@ kbd { padding: 4px 7px; border: 1px solid #ffffff20; border-bottom-width: 3px; b
 .game-shell { width: 100%; }
 .game-host { width: 300px; height: 600px; max-width: 100%; margin: auto; overflow: hidden; border: 1px solid #ffffff12; border-radius: 12px; box-shadow: 0 0 60px #7c3aed25; touch-action: pan-y pinch-zoom; }
 .game-host canvas { display: block; }
-.touch-controls { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; width: 300px; max-width: 100%; margin: 12px auto 0; }
+.touch-controls { display: grid; grid-template-columns: 3fr 2fr; gap: 8px; width: 340px; max-width: 100%; margin: 12px auto 0; }
+.move-controls, .action-controls { display: grid; gap: 7px; }
+.move-controls { grid-template-columns: repeat(3, 1fr); }
+.action-controls { grid-template-columns: repeat(2, 1fr); }
 .touch-controls button { min-height: 46px; border: 1px solid #ffffff18; border-radius: 10px; background: #161e31; color: white; font-size: 20px; font-weight: 800; cursor: pointer; touch-action: manipulation; }
 .touch-controls button:active { background: #7c3aed; transform: translateY(1px); }
 .touch-controls .drop { font-size: 10px; color: #c4b5fd; }
-@media (max-width: 760px) { .tetris-section { margin: 50px 18px 10px; padding: 30px 18px; grid-template-columns: 1fr; gap: 32px; text-align: center; }.intro p { margin-inline: auto; }.keyboard-help { display: none; }.game-host { height: min(600px, 125vw); } }
+.touch-controls .pause { grid-column: 1 / -1; min-height: 42px; font-size: 14px; color: #c4b5fd; }
+@media (max-width: 760px), (pointer: coarse) { .tetris-section { margin: 50px 18px 10px; padding: 30px 18px; grid-template-columns: 1fr; gap: 32px; text-align: center; }.intro p { margin-inline: auto; }.keyboard-help { display: none; }.game-host { height: min(600px, 125vw); }.touch-controls button { min-height: 54px; } }

@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild, inject, output } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnDestroy, ViewChild, inject, output, signal } from '@angular/core';
 import Phaser from 'phaser';
 import { I18nService, TranslationKey } from '../../services/i18n.service';
 
@@ -29,11 +29,12 @@ class TetrisScene extends Phaser.Scene {
   private dropAt = 0;
   private dropDelay = 650;
   private ended = false;
+  private paused = false;
   private graphics!: Phaser.GameObjects.Graphics;
   private scoreText!: Phaser.GameObjects.Text;
   private statusText!: Phaser.GameObjects.Text;
 
-  constructor(private readonly translate: (key: TranslationKey) => string) { super('tetris'); }
+  constructor(private readonly translate: (key: TranslationKey) => string, private readonly pauseChanged: (paused: boolean) => void) { super('tetris'); }
 
   create(): void {
     this.graphics = this.add.graphics();
@@ -58,25 +59,27 @@ class TetrisScene extends Phaser.Scene {
     keyboard?.on('keydown-W', () => this.rotate());
     keyboard?.on('keydown-SPACE', () => this.hardDrop());
     keyboard?.on('keydown-R', () => this.restart());
+    keyboard?.on('keydown-P', () => this.togglePause());
+    keyboard?.on('keydown-ESC', () => this.togglePause());
     this.restart();
   }
 
   override update(time: number): void {
-    if (!this.ended && time >= this.dropAt) {
+    if (!this.ended && !this.paused && time >= this.dropAt) {
       this.stepDown();
       this.dropAt = time + this.dropDelay;
     }
   }
 
   move(direction: number): void {
-    if (!this.ended && !this.collides(this.piece, this.pieceX + direction, this.pieceY)) {
+    if (!this.ended && !this.paused && !this.collides(this.piece, this.pieceX + direction, this.pieceY)) {
       this.pieceX += direction;
       this.draw();
     }
   }
 
   rotate(): void {
-    if (this.ended) return;
+    if (this.ended || this.paused) return;
     const rotated = this.piece[0].map((_, index) => this.piece.map(row => row[index]).reverse());
     for (const offset of [0, -1, 1, -2, 2]) {
       if (!this.collides(rotated, this.pieceX + offset, this.pieceY)) {
@@ -89,13 +92,13 @@ class TetrisScene extends Phaser.Scene {
   }
 
   softDrop(): void {
-    if (!this.ended) {
+    if (!this.ended && !this.paused) {
       this.stepDown();
     }
   }
 
   hardDrop(): void {
-    if (this.ended) return;
+    if (this.ended || this.paused) return;
     while (!this.collides(this.piece, this.pieceX, this.pieceY + 1)) {
       this.pieceY++;
     }
@@ -108,11 +111,23 @@ class TetrisScene extends Phaser.Scene {
     this.lines = 0;
     this.dropDelay = 650;
     this.ended = false;
+    this.paused = false;
+    this.pauseChanged(false);
     this.statusText.setText('');
     this.spawnPiece();
     this.updateLabels();
     this.draw();
   }
+
+  togglePause(): boolean {
+    if (this.ended) return this.paused;
+    this.paused = !this.paused;
+    this.statusText.setText(this.paused ? this.translate('paused') : '');
+    this.pauseChanged(this.paused);
+    return this.paused;
+  }
+
+  pauseIfRunning(): void { if (!this.ended && !this.paused) this.togglePause(); }
 
   private stepDown(): boolean {
     if (!this.collides(this.piece, this.pieceX, this.pieceY + 1)) {
@@ -198,11 +213,12 @@ export class TetrisGame implements AfterViewInit, OnDestroy {
   readonly ready = output<void>();
   @ViewChild('gameHost', { static: true }) private gameHost!: ElementRef<HTMLDivElement>;
   protected readonly i18n = inject(I18nService);
+  protected readonly paused = signal(false);
   private game?: Phaser.Game;
   private scene?: TetrisScene;
 
   ngAfterViewInit(): void {
-    this.scene = new TetrisScene(key => this.i18n.t(key));
+    this.scene = new TetrisScene(key => this.i18n.t(key), paused => this.paused.set(paused));
     this.game = new Phaser.Game({
       type: Phaser.AUTO,
       parent: this.gameHost.nativeElement,
@@ -215,14 +231,18 @@ export class TetrisGame implements AfterViewInit, OnDestroy {
     requestAnimationFrame(() => this.ready.emit());
   }
 
-  control(action: 'left' | 'right' | 'rotate' | 'down' | 'drop' | 'restart'): void {
+  control(action: 'left' | 'right' | 'rotate' | 'down' | 'drop' | 'pause' | 'restart'): void {
     if (action === 'left') this.scene?.move(-1);
     if (action === 'right') this.scene?.move(1);
     if (action === 'rotate') this.scene?.rotate();
     if (action === 'down') this.scene?.softDrop();
     if (action === 'drop') this.scene?.hardDrop();
+    if (action === 'pause') this.scene?.togglePause();
     if (action === 'restart') this.scene?.restart();
   }
+
+  @HostListener('document:visibilitychange')
+  protected pauseWhenHidden(): void { if (document.hidden) this.scene?.pauseIfRunning(); }
 
   ngOnDestroy(): void { this.game?.destroy(true); }
 }

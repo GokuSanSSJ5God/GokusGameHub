@@ -1,4 +1,4 @@
-import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, OnDestroy, ViewChild, inject, output } from '@angular/core';
+import { AfterViewInit, ChangeDetectionStrategy, Component, ElementRef, HostListener, OnDestroy, ViewChild, inject, output, signal } from '@angular/core';
 import Phaser from 'phaser';
 import { I18nService, TranslationKey } from '../../services/i18n.service';
 
@@ -18,8 +18,9 @@ class SnakeScene extends Phaser.Scene {
   private moveAt = 0;
   private moveDelay = 140;
   private ended = false;
+  private paused = false;
 
-  constructor(private readonly translate: (key: TranslationKey) => string) { super('snake'); }
+  constructor(private readonly translate: (key: TranslationKey) => string, private readonly pauseChanged: (paused: boolean) => void) { super('snake'); }
 
   create(): void {
     this.graphics = this.add.graphics();
@@ -32,15 +33,16 @@ class SnakeScene extends Phaser.Scene {
     keyboard?.on('keydown-UP', () => this.turn('up')); keyboard?.on('keydown-W', () => this.turn('up'));
     keyboard?.on('keydown-DOWN', () => this.turn('down')); keyboard?.on('keydown-S', () => this.turn('down'));
     keyboard?.on('keydown-R', () => this.restart()); keyboard?.on('keydown-SPACE', () => { if (this.ended) this.restart(); });
+    keyboard?.on('keydown-P', () => this.togglePause()); keyboard?.on('keydown-ESC', () => this.togglePause());
     this.restart();
   }
 
   override update(time: number): void {
-    if (!this.ended && time >= this.moveAt) { this.moveAt = time + this.moveDelay; this.move(); }
+    if (!this.ended && !this.paused && time >= this.moveAt) { this.moveAt = time + this.moveDelay; this.move(); }
   }
 
   turn(target: 'left' | 'right' | 'up' | 'down'): void {
-    if (this.ended) return;
+    if (this.ended || this.paused) return;
     const directions = { left: { x: -1, y: 0 }, right: { x: 1, y: 0 }, up: { x: 0, y: -1 }, down: { x: 0, y: 1 } };
     const candidate = directions[target];
     if (candidate.x !== -this.direction.x || candidate.y !== -this.direction.y) this.queuedDirection = candidate;
@@ -49,9 +51,19 @@ class SnakeScene extends Phaser.Scene {
   restart(): void {
     this.snake = [{ x: 9, y: 10 }, { x: 8, y: 10 }, { x: 7, y: 10 }];
     this.direction = { x: 1, y: 0 }; this.queuedDirection = { x: 1, y: 0 };
-    this.score = 0; this.moveDelay = 140; this.ended = false; this.statusText.setText('');
+    this.score = 0; this.moveDelay = 140; this.ended = false; this.paused = false; this.pauseChanged(false); this.statusText.setText('');
     this.placeFood(); this.updateScore(); this.draw();
   }
+
+  togglePause(): boolean {
+    if (this.ended) return this.paused;
+    this.paused = !this.paused;
+    this.statusText.setText(this.paused ? this.translate('paused') : '');
+    this.pauseChanged(this.paused);
+    return this.paused;
+  }
+
+  pauseIfRunning(): void { if (!this.ended && !this.paused) this.togglePause(); }
 
   private move(): void {
     this.direction = this.queuedDirection;
@@ -87,12 +99,15 @@ export class SnakeGame implements AfterViewInit, OnDestroy {
   readonly closed = output<void>(); readonly ready = output<void>();
   @ViewChild('gameHost', { static: true }) private gameHost!: ElementRef<HTMLDivElement>;
   protected readonly i18n = inject(I18nService);
+  protected readonly paused = signal(false);
   private game?: Phaser.Game; private scene?: SnakeScene;
   ngAfterViewInit(): void {
-    this.scene = new SnakeScene(key => this.i18n.t(key));
+    this.scene = new SnakeScene(key => this.i18n.t(key), paused => this.paused.set(paused));
     this.game = new Phaser.Game({ type: Phaser.AUTO, parent: this.gameHost.nativeElement, width: 400, height: 450, backgroundColor: '#07130e', scene: this.scene, scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH } });
     requestAnimationFrame(() => this.ready.emit());
   }
-  control(action: 'left' | 'right' | 'up' | 'down' | 'restart'): void { if (action === 'restart') this.scene?.restart(); else this.scene?.turn(action); }
+  control(action: 'left' | 'right' | 'up' | 'down' | 'pause' | 'restart'): void { if (action === 'restart') this.scene?.restart(); else if (action === 'pause') this.scene?.togglePause(); else this.scene?.turn(action); }
+  @HostListener('document:visibilitychange')
+  protected pauseWhenHidden(): void { if (document.hidden) this.scene?.pauseIfRunning(); }
   ngOnDestroy(): void { this.game?.destroy(true); }
 }
