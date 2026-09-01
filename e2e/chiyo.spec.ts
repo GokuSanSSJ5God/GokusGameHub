@@ -51,6 +51,17 @@ test.describe("Chiyo's Flight", () => {
     expect(section!.x + section!.width).toBeLessThanOrEqual(viewport!.width + 1);
     expect(canvas!.x).toBeGreaterThanOrEqual(section!.x);
     expect(canvas!.x + canvas!.width).toBeLessThanOrEqual(section!.x + section!.width + 1);
+    if (test.info().project.use.hasTouch) {
+      const host = await page.locator('#active-chiyo .game-host').boundingBox();
+      const controls = await page.locator('#active-chiyo .mobile-controls').getByRole('button').all();
+      for (const control of controls) {
+        const box = await control.boundingBox();
+        expect(box!.x).toBeGreaterThanOrEqual(host!.x);
+        expect(box!.y).toBeGreaterThanOrEqual(host!.y);
+        expect(box!.x + box!.width).toBeLessThanOrEqual(host!.x + host!.width + 1);
+        expect(box!.y + box!.height).toBeLessThanOrEqual(host!.y + host!.height + 1);
+      }
+    }
   });
 
   test('mobile pause control pauses and resumes the game', async ({ page }, testInfo) => {

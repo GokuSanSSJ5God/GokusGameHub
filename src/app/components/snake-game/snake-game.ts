@@ -24,7 +24,7 @@ class SnakeScene extends Phaser.Scene {
 
   create(): void {
     this.graphics = this.add.graphics();
-    this.scoreText = this.add.text(12, 414, '', { color: '#86efac', fontFamily: 'system-ui', fontSize: '15px', fontStyle: 'bold' });
+    this.scoreText = this.add.text(12, 12, '', { color: '#86efac', fontFamily: 'system-ui', fontSize: '15px', fontStyle: 'bold', lineSpacing: 4 }).setDepth(2);
     this.statusText = this.add.text(200, 200, '', { align: 'center', color: '#ffffff', fontFamily: 'system-ui', fontSize: '26px', fontStyle: 'bold' }).setOrigin(0.5).setDepth(2);
     const keyboard = this.input.keyboard;
     keyboard?.addCapture([Phaser.Input.Keyboard.KeyCodes.LEFT, Phaser.Input.Keyboard.KeyCodes.RIGHT, Phaser.Input.Keyboard.KeyCodes.UP, Phaser.Input.Keyboard.KeyCodes.DOWN, Phaser.Input.Keyboard.KeyCodes.SPACE]);
@@ -91,7 +91,7 @@ class SnakeScene extends Phaser.Scene {
     this.snake.forEach((segment, index) => this.graphics.fillStyle(index === 0 ? 0x86efac : 0x22c55e, 1).fillRoundedRect(segment.x * CELL + 1, segment.y * CELL + 1, CELL - 2, CELL - 2, 5));
   }
 
-  private updateScore(): void { this.scoreText.setText(`${this.translate('score')}  ${this.score}     ${this.translate('length')}  ${this.snake.length}`); }
+  private updateScore(): void { this.scoreText.setText(`${this.translate('score')}  ${this.score}\n${this.translate('length')}  ${this.snake.length}`); }
 }
 
 @Component({ selector: 'app-snake-game', templateUrl: './snake-game.html', styleUrl: './snake-game.css', changeDetection: ChangeDetectionStrategy.OnPush })

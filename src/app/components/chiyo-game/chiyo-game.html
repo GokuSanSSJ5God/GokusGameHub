@@ -1,8 +1,10 @@
 <section class="chiyo-section" aria-labelledby="chiyo-title">
   <div class="heading"><div><span>{{ i18n.t('playNow') }}</span><h2 id="chiyo-title">Chiyo's Flight</h2><p>{{ i18n.t('chiyoDesc') }}</p></div><div class="actions"><button type="button" (click)="restart()">{{ i18n.t('newGame') }}</button><button class="close" type="button" (click)="closed.emit()">{{ i18n.t('backToGames') }}</button></div></div>
-  <div #gameHost class="game-host" aria-label="Gra Chiyo's Flight"></div>
-  <div class="mobile-controls" aria-label="Sterowanie grą">
-    <button class="mobile-flap" type="button" (click)="flap()">🐤 {{ i18n.t('flap') }}</button>
-    <button class="mobile-pause" type="button" (click)="togglePause()">{{ paused() ? '▶' : 'Ⅱ' }} {{ i18n.t(paused() ? 'resume' : 'pause') }}</button>
+  <div class="game-stage">
+    <div #gameHost class="game-host" aria-label="Gra Chiyo's Flight"></div>
+    <div class="mobile-controls" aria-label="Sterowanie grą">
+      <button class="mobile-flap" type="button" (click)="flap()">🐤 {{ i18n.t('flap') }}</button>
+      <button class="mobile-pause" type="button" (click)="togglePause()">{{ paused() ? '▶' : 'Ⅱ' }} {{ i18n.t(paused() ? 'resume' : 'pause') }}</button>
+    </div>
   </div>
 </section>

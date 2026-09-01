@@ -7,18 +7,21 @@
     <div class="actions"><button class="restart" type="button" (click)="control('restart')">{{ i18n.t('newGame') }}</button><button class="close" type="button" (click)="closed.emit()">{{ i18n.t('backToGames') }}</button></div>
   </div>
   <div class="game-shell">
-    <div #gameHost class="game-host" aria-label="Gra Tetris"></div>
-    <div class="touch-controls" aria-label="Sterowanie grą">
-      <div class="move-controls">
-        <button type="button" (click)="control('left')" aria-label="W lewo">←</button>
-        <button type="button" (click)="control('down')" aria-label="W dół">↓</button>
-        <button type="button" (click)="control('right')" aria-label="W prawo">→</button>
+    <div class="game-stage">
+      <div #gameHost class="game-host" aria-label="Gra Tetris"></div>
+      <div class="touch-controls" aria-label="Sterowanie grą">
+        <div class="move-controls">
+          <button type="button" (click)="control('left')" aria-label="W lewo">←</button>
+          <button type="button" (click)="control('down')" aria-label="W dół">↓</button>
+          <button type="button" (click)="control('right')" aria-label="W prawo">→</button>
+        </div>
+        <div class="action-controls">
+          <button type="button" (click)="control('rotate')" aria-label="Obróć">↻</button>
+          <button class="drop" type="button" (click)="control('drop')" aria-label="Upuść">DROP</button>
+        </div>
+        <button class="pause" type="button" (click)="control('pause')">{{ paused() ? '▶' : 'Ⅱ' }} {{ i18n.t(paused() ? 'resume' : 'pause') }}</button>
       </div>
-      <div class="action-controls">
-        <button type="button" (click)="control('rotate')" aria-label="Obróć">↻</button>
-        <button class="drop" type="button" (click)="control('drop')" aria-label="Upuść">DROP</button>
-      </div>
-      <button class="pause" type="button" (click)="control('pause')">{{ paused() ? '▶' : 'Ⅱ' }} {{ i18n.t(paused() ? 'resume' : 'pause') }}</button>
     </div>
+    <div class="mobile-game-actions"><button class="restart" type="button" (click)="control('restart')">{{ i18n.t('newGame') }}</button><button class="close" type="button" (click)="closed.emit()">{{ i18n.t('backToGames') }}</button></div>
   </div>
 </section>
