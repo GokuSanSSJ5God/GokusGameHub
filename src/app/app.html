@@ -3,21 +3,21 @@
   <app-games (gameSelected)="openGame($event)" />
   @defer (when selectedGame() === 'tetris') {
     @if (selectedGame() === 'tetris') {
-      <div id="active-game"><app-tetris-game (ready)="scrollToGame()" (closed)="selectedGame.set(null)" /></div>
+      <div id="active-game"><app-tetris-game (ready)="scrollToGame()" (closed)="closeGame('tetris')" /></div>
     }
   } @placeholder {
     <span></span>
   }
   @defer (when selectedGame() === 'snake') {
     @if (selectedGame() === 'snake') {
-      <div id="active-snake"><app-snake-game (ready)="scrollToSnake()" (closed)="selectedGame.set(null)" /></div>
+      <div id="active-snake"><app-snake-game (ready)="scrollToSnake()" (closed)="closeGame('snake')" /></div>
     }
   } @placeholder {
     <span></span>
   }
   @defer (when selectedGame() === 'chiyo') {
     @if (selectedGame() === 'chiyo') {
-      <div id="active-chiyo"><app-chiyo-game (ready)="scrollToChiyo()" (closed)="selectedGame.set(null)" /></div>
+      <div id="active-chiyo"><app-chiyo-game (ready)="scrollToChiyo()" (closed)="closeGame('chiyo')" /></div>
     }
   } @placeholder {
     <span></span>

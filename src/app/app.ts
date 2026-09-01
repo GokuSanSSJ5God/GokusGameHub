@@ -34,6 +34,12 @@ export class App {
     this.selectedGame.set(gameId);
   }
 
+  protected closeGame(gameId: string): void {
+    this.selectedGame.set(null);
+    this.changeDetector.detectChanges();
+    document.querySelector(`#game-card-${gameId}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
   @HostListener('window:pageshow', ['$event'])
   protected resetRestoredGame(event: PageTransitionEvent): void {
     if (event.persisted) {

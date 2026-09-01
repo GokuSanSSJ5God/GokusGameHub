@@ -77,6 +77,19 @@ test.describe('Home page', () => {
     await expect(page.locator('#active-game canvas')).toBeVisible();
   });
 
+  test('closing a game returns to its card', async ({ page }) => {
+    const card = page.locator('#game-card-tetris');
+    await card.getByRole('button', { name: /Graj|Play|プレイ/ }).click();
+    await expect(page.locator('#active-game canvas')).toBeVisible();
+
+    await page.locator('#active-game').getByRole('button', { name: /Wróć do gier|Back to games|ゲーム一覧へ/ }).click();
+    await expect(page.locator('#active-game')).toHaveCount(0);
+    await expect.poll(async () => {
+      const box = await card.boundingBox();
+      return box ? box.y >= 0 && box.y + box.height <= page.viewportSize()!.height : false;
+    }).toBe(true);
+  });
+
   test('visual scroll journey matches the approved snapshots', async ({ page }) => {
     await page.evaluate(() => window.scrollTo(0, 0));
     await expect(page).toHaveScreenshot(['pages', 'home', 'steps', '01-hero.png'], {
