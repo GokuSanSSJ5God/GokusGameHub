@@ -48,7 +48,7 @@ test.describe('Home page', () => {
       }).toBeLessThan(page.viewportSize()!.height);
       expect((await activeGame.boundingBox())!.y).toBeGreaterThanOrEqual(-1);
 
-      if (game.activeId !== '#active-chiyo') await page.keyboard.press('P');
+      if (game.activeId !== '#active-chiyo') {await page.keyboard.press('P');}
       await expect(page).toHaveScreenshot(['pages', 'home', 'game-navigation', game.snapshot], {
         animations: 'disabled',
         caret: 'hide',

@@ -12,7 +12,7 @@ describe('ChiyoEngine', () => {
   it('does not lose immediately after the first flap', () => {
     const game = new ChiyoEngine(() => 0.9);
     game.flap();
-    for (let frame = 0; frame < 20; frame++) game.step(1 / 60);
+    for (let frame = 0; frame < 20; frame++) {game.step(1 / 60);}
     expect(game.started).toBe(true);
     expect(game.ended).toBe(false);
   });
@@ -27,7 +27,7 @@ describe('ChiyoEngine', () => {
   it('awards distance points while flying', () => {
     const game = new ChiyoEngine(() => 0.9);
     game.flap();
-    for (let frame = 0; frame < 10; frame++) game.step(1 / 60);
+    for (let frame = 0; frame < 10; frame++) {game.step(1 / 60);}
     expect(game.distance).toBeGreaterThan(0);
     expect(game.score).toBeGreaterThan(0);
   });

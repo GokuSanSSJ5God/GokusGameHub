@@ -20,18 +20,18 @@ export class GameAudioService {
 
   start(theme: GameAudioTheme): void {
     this.theme = theme;
-    if (this.enabled()) this.startMusic();
+    if (this.enabled()) {this.startMusic();}
   }
 
   toggle(theme: GameAudioTheme): void {
     this.theme = theme;
     this.enabled.update(enabled => !enabled);
     try { localStorage.setItem('game-audio-enabled', String(this.enabled())); } catch { /* Storage may be unavailable. */ }
-    if (this.enabled()) this.startMusic(); else this.stopMusic();
+    if (this.enabled()) {this.startMusic();} else {this.stopMusic();}
   }
 
   playEffect(effect: GameSoundEffect): void {
-    if (!this.enabled()) return;
+    if (!this.enabled()) {return;}
     const context = this.ensureContext();
     const presets: Record<GameSoundEffect, [number, number, number, OscillatorType]> = {
       turn: [330, 440, .07, 'sine'],
@@ -60,7 +60,7 @@ export class GameAudioService {
   }
 
   private startMusic(): void {
-    if (!this.theme) return;
+    if (!this.theme) {return;}
     const context = this.ensureContext();
     void context.resume();
     this.stopMusic();
@@ -73,7 +73,7 @@ export class GameAudioService {
   }
 
   private scheduleChord(): void {
-    if (!this.context || !this.musicGain || !this.theme) return;
+    if (!this.context || !this.musicGain || !this.theme) {return;}
     const notes = THEME_NOTES[this.theme][this.chordIndex++ % THEME_NOTES[this.theme].length];
     const now = this.context.currentTime;
     notes.forEach((frequency, index) => {
@@ -91,7 +91,7 @@ export class GameAudioService {
   }
 
   private stopMusic(): void {
-    if (this.timer) clearInterval(this.timer);
+    if (this.timer) {clearInterval(this.timer);}
     this.timer = undefined;
     this.musicGain?.gain.setTargetAtTime(.0001, this.context?.currentTime ?? 0, .04);
     this.musicGain = undefined;

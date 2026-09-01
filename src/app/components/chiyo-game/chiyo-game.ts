@@ -55,23 +55,23 @@ class ChiyoScene extends Phaser.Scene {
   }
 
   private preventGameplayScroll(event: KeyboardEvent): void {
-    if (this.engine.started && !this.engine.ended) event.preventDefault();
+    if (this.engine.started && !this.engine.ended) {event.preventDefault();}
   }
 
   override update(time: number): void {
     const delta = Math.min((time - this.lastTime) / 1000, 0.035);
     this.lastTime = time;
-    if (!this.engine.started || this.engine.ended || delta <= 0) return;
+    if (!this.engine.started || this.engine.ended || delta <= 0) {return;}
     const collectedItems = this.engine.collectedItems;
     this.engine.step(delta);
-    if (this.engine.collectedItems > collectedItems) this.playSound('score');
+    if (this.engine.collectedItems > collectedItems) {this.playSound('score');}
     if (this.engine.ended) { this.playSound('gameOver'); this.hintText.setText(`${this.translate('gameOver')}\n${this.translate('score')} ${this.engine.score}\nClick / R — ${this.translate('restart')}`); }
     this.updateScore();
     this.draw();
   }
 
   flap(): void {
-    if (this.engine.paused) return;
+    if (this.engine.paused) {return;}
     if (this.engine.ended) { this.restart(); return; }
     this.engine.flap();
     this.playSound('flap');
@@ -81,14 +81,14 @@ class ChiyoScene extends Phaser.Scene {
   togglePause(): boolean {
     const paused = this.engine.togglePause();
     this.pauseText.setText(`P / ESC — ${this.translate(paused ? 'resume' : 'pause')}`);
-    if (paused) this.hintText.setText(this.translate('paused'));
-    else if (this.engine.started && !this.engine.ended) this.hintText.setText('');
+    if (paused) {this.hintText.setText(this.translate('paused'));}
+    else if (this.engine.started && !this.engine.ended) {this.hintText.setText('');}
     this.pauseChanged(paused);
     return paused;
   }
 
   pauseIfRunning(): void {
-    if (this.engine.started && !this.engine.ended && !this.engine.paused) this.togglePause();
+    if (this.engine.started && !this.engine.ended && !this.engine.paused) {this.togglePause();}
   }
 
   restart(): void {
@@ -111,7 +111,7 @@ class ChiyoScene extends Phaser.Scene {
       if (Math.random() < 0.22) {
         const minY = next.top + 48;
         const maxY = HEIGHT - next.bottom - 48;
-        if (maxY > minY) this.items.push({ x: next.x + SLICE_WIDTH / 2, y: Phaser.Math.Between(Math.ceil(minY), Math.floor(maxY)), collected: false });
+        if (maxY > minY) {this.items.push({ x: next.x + SLICE_WIDTH / 2, y: Phaser.Math.Between(Math.ceil(minY), Math.floor(maxY)), collected: false });}
       }
     }
     this.items = this.items.filter(item => item.x > -30 && !item.collected);
@@ -120,7 +120,7 @@ class ChiyoScene extends Phaser.Scene {
   private createSlice(x: number, index: number): TerrainSlice {
     // Keep the opening section wide and centered so the first flap can never
     // send Chiyo directly into procedurally generated terrain.
-    if (this.distance === 0 && index < 11) return { x, top: 55, bottom: 55 };
+    if (this.distance === 0 && index < 11) {return { x, top: 55, bottom: 55 };}
 
     const wave = Math.sin(index * 0.42) * 55 + Math.sin(index * 0.13) * 30;
     const difficulty = Math.min(45, this.distance / 500);
@@ -160,7 +160,7 @@ class ChiyoScene extends Phaser.Scene {
       this.graphics.fillStyle(0x14532d, 1).fillRect(slice.x, HEIGHT - slice.bottom, SLICE_WIDTH + 1, slice.bottom);
       this.graphics.fillStyle(0x22c55e, 1).fillRect(slice.x, HEIGHT - slice.bottom, SLICE_WIDTH + 1, 7);
     });
-    this.engine.items.forEach(item => { if (!item.collected) this.drawSeed(item.x, item.y); });
+    this.engine.items.forEach(item => { if (!item.collected) {this.drawSeed(item.x, item.y);} });
     this.drawBird();
   }
 
@@ -209,6 +209,6 @@ export class ChiyoGame implements AfterViewInit, OnDestroy {
   restart(): void { this.scene?.restart(); }
   toggleAudio(): void { this.audio.toggle('chiyo'); }
   @HostListener('document:visibilitychange')
-  protected pauseWhenHidden(): void { if (document.hidden) this.scene?.pauseIfRunning(); }
+  protected pauseWhenHidden(): void { if (document.hidden) {this.scene?.pauseIfRunning();} }
   ngOnDestroy(): void { this.audio.stop(); this.game?.destroy(true); }
 }

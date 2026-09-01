@@ -24,6 +24,6 @@ export class Games {
   ];
 
   protected selectGame(game: Game): void {
-    if (game.available) this.gameSelected.emit(game.id);
+    if (game.available) {this.gameSelected.emit(game.id);}
   }
 }

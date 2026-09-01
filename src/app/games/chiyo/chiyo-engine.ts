@@ -38,14 +38,14 @@ export class ChiyoEngine {
   }
 
   flap(): void {
-    if (this.paused) return;
+    if (this.paused) {return;}
     if (this.ended) { this.restart(); return; }
     this.started = true;
     this.velocityY = -360;
   }
 
   step(delta: number): void {
-    if (!this.started || this.ended || this.paused || delta <= 0) return;
+    if (!this.started || this.ended || this.paused || delta <= 0) {return;}
     const safeDelta = Math.min(delta, 0.035);
     this.velocityY += 980 * safeDelta;
     this.birdY += this.velocityY * safeDelta;
@@ -56,7 +56,7 @@ export class ChiyoEngine {
   }
 
   togglePause(): boolean {
-    if (!this.started || this.ended) return this.paused;
+    if (!this.started || this.ended) {return this.paused;}
     this.paused = !this.paused;
     return this.paused;
   }
@@ -72,14 +72,14 @@ export class ChiyoEngine {
       if (this.random() < 0.22) {
         const minY = next.top + 48;
         const maxY = CHIYO_HEIGHT - next.bottom - 48;
-        if (maxY > minY) this.items.push({ x: next.x + CHIYO_SLICE_WIDTH / 2, y: minY + this.random() * (maxY - minY), collected: false });
+        if (maxY > minY) {this.items.push({ x: next.x + CHIYO_SLICE_WIDTH / 2, y: minY + this.random() * (maxY - minY), collected: false });}
       }
     }
     this.items = this.items.filter(item => item.x > -30 && !item.collected);
   }
 
   private createSlice(x: number, index: number): ChiyoTerrainSlice {
-    if (this.distance === 0 && index < 11) return { x, top: 55, bottom: 55 };
+    if (this.distance === 0 && index < 11) {return { x, top: 55, bottom: 55 };}
     const wave = Math.sin(index * 0.42) * 55 + Math.sin(index * 0.13) * 30;
     const difficulty = Math.min(35, this.distance / 700);
     const gap = 280 - difficulty;
@@ -97,8 +97,8 @@ export class ChiyoEngine {
     const obstacleScale = this.obstacleProfile.shift();
     if (obstacleScale !== undefined) {
       const bump = this.obstacleHeight * obstacleScale;
-      if (this.obstacleFromTop) top = Math.min(225, top + bump);
-      else bottom = Math.min(225, bottom + bump);
+      if (this.obstacleFromTop) {top = Math.min(225, top + bump);}
+      else {bottom = Math.min(225, bottom + bump);}
     }
 
     return { x, top, bottom };

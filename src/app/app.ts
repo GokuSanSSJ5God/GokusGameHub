@@ -20,7 +20,7 @@ export class App {
   private readonly changeDetector = inject(ChangeDetectorRef);
 
   constructor() {
-    if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
+    if ('scrollRestoration' in history) {history.scrollRestoration = 'manual';}
     afterNextRender(() => window.scrollTo({ top: 0, left: 0, behavior: 'instant' }));
   }
 
