@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, HostListener, afterNextRender, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, HostListener, afterNextRender, inject, signal } from '@angular/core';
 import { Footer } from './components/footer/footer';
 import { Games } from './components/games/games';
 import { TitleHeader } from './components/title-header/title-header';
@@ -17,6 +17,7 @@ import { I18nService } from './services/i18n.service';
 export class App {
   protected readonly i18n = inject(I18nService);
   protected readonly selectedGame = signal<string | null>(null);
+  private readonly changeDetector = inject(ChangeDetectorRef);
 
   constructor() {
     if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
@@ -26,7 +27,8 @@ export class App {
   protected openGame(gameId: string): void {
     if (this.selectedGame() === gameId) {
       this.selectedGame.set(null);
-      requestAnimationFrame(() => this.selectedGame.set(gameId));
+      this.changeDetector.detectChanges();
+      this.selectedGame.set(gameId);
       return;
     }
     this.selectedGame.set(gameId);
@@ -34,7 +36,10 @@ export class App {
 
   @HostListener('window:pageshow', ['$event'])
   protected resetRestoredGame(event: PageTransitionEvent): void {
-    if (event.persisted) this.selectedGame.set(null);
+    if (event.persisted) {
+      this.selectedGame.set(null);
+      this.changeDetector.detectChanges();
+    }
   }
 
   protected scrollToGame(): void {
